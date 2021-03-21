@@ -3,17 +3,17 @@ Description: Deploy a service into an ECS cluster behind a public load balancer.
 Parameters:
   EnvironmentName:
     Type: String
-    Description: The name of the environment to add this service to
     Default: development
+    Description: The name of the environment to add this service to
 
   VPC:
-    Description: The VPC that the ECS cluster is deployed to
     Type: AWS::EC2::VPC::Id
+    Description: The VPC that the ECS cluster is deployed to
 
   Cluster:
-    Description: Please provide the ECS Cluster ID that this service should run on
     Type: String
     Default: development
+    Description: Please provide the ECS Cluster ID that this service should run on
 
   ServiceName:
     Type: String
@@ -22,15 +22,13 @@ Parameters:
 
   ALBPublic:
     Type: String
-    Description: A Load balance
     Default: arn:aws:elasticloadbalancing:sa-east-1:268919435141:loadbalancer/app/development/995a8b8e2d2459ee
+    Description: A Load balance
 
   ServiceImageUrl:
     Type: String
     Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon
-    Description:
-      The url of a docker image that contains the application process that
-      will handle the traffic for this service
+    Description: The url of a docker image that contains the application process that
 
   NginxImageUrl:
     Type: String
@@ -41,9 +39,9 @@ Parameters:
     Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-xray
 
   ECSServiceAutoScalingRoleARN:
-    Description: The ECS service auto scaling role ARN
     Type: String
     Default: arn:aws:iam::268919435141:role/ECSStack-ECSServiceAutoScalingRole-12ITYPCCMEBL4
+    Description: The ECS service auto scaling role ARN
 
   ContainerPort:
     Type: Number
@@ -68,6 +66,11 @@ Parameters:
     Type: Number
     Default: 1
     Description: How many copies of the service task to run
+
+  XRayPort:
+    Type: Number
+    Default: 2000
+    Description: XRay port
 
   Role:
     Type: String
@@ -101,25 +104,7 @@ Resources:
           - !Ref "Role"
           - !Ref "AWS::NoValue"
       ContainerDefinitions:
-        - Name: !Ref "ServiceName"
-          Cpu: 100
-          Memory: 128
-          Image: !Ref "ServiceImageUrl"
-          PortMappings:
-            - ContainerPort: 80
-              HostPort: 5001
-          Links:
-            - xray-daemon
-          Environment:
-            - name: AWS_XRAY_DAEMON_ADDRESS
-              value: xray-daemon:2000
-          LogConfiguration:
-            LogDriver: "awslogs"
-            Options:
-              awslogs-group: !Sub ${EnvironmentName}-service-${ServiceName}
-              awslogs-region: !Ref "AWS::Region"
-              awslogs-stream-prefix: !Sub ${EnvironmentName}-${ServiceName}
-        - Name: nginx
+        - Name: !Sub ${ServiceName}-Nginx
           Cpu: 100
           Memory: 128
           Essential: true
@@ -136,15 +121,33 @@ Resources:
               awslogs-group: !Sub ${EnvironmentName}-service-${ServiceName}
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: !Sub ${EnvironmentName}-${ServiceName}-nginx
+        - Name: !Ref "ServiceName"
+          Cpu: 100
+          Memory: 128
+          Image: !Ref "ServiceImageUrl"
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 5001
+          Links:
+            - xray-daemon
+          Environment:
+            - name: AWS_XRAY_DAEMON_ADDRESS
+              value: !Sub xray-daemon:${XRayPort}
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Sub ${EnvironmentName}-service-${ServiceName}
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Sub ${EnvironmentName}-${ServiceName}
         - Name: xray-daemon
           Cpu: 100
           Memory: 128
-          Essential: true
+          Essential: false
           Image: !Ref "XRayImageUrl"
           PortMappings:
-            - ContainerPort: 2000
-              HostPort: 2000
-              Protocol: UDP
+            - ContainerPort: !Ref XRayPort
+              HostPort: !Ref XRayPort
+              Protocol: udp
           LogConfiguration:
             LogDriver: "awslogs"
             Options:
@@ -167,7 +170,7 @@ Resources:
       DesiredCount: !Ref "DesiredCount"
       TaskDefinition: !Ref "TaskDefinition"
       LoadBalancers:
-        - ContainerName: !Ref "ServiceName"
+        - ContainerName: !Sub ${ServiceName}-Nginx
           ContainerPort: 80
           TargetGroupArn: !Ref "TargetGroup"
 
@@ -180,11 +183,11 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 10
-      HealthCheckPath: /health/live
+      HealthCheckPath: /ms-logon/health/live
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
-      Name: !Ref "ServiceName"
+      Name: !Sub ${ServiceName}-nginx
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 2
@@ -211,7 +214,7 @@ Resources:
         - Field: path-pattern
           Values:
             - !Ref "Path"
-            #- !Sub ${Path}/*
+            - !Sub ${Path}/*
       ListenerArn: !Ref "HttpListener"
       Priority: !Ref "Priority"
 
