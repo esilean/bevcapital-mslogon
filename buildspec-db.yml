@@ -13,9 +13,9 @@ phases:
       - echo Info about dbcontext
       - echo ASPNETCORE_ENVIRONMENT is $ASPNETCORE_ENVIRONMENT
       - echo ConnectionStrings__DefaultConnection $ConnectionStrings__DefaultConnection
-      - dotnet ef dbcontext info -p ./ms-logon/src/BevCapital.Logon.Data -s ./ms-logon/src/BevCapital.Logon.API
+      - dotnet ef dbcontext info -p ./src/BevCapital.Logon.Data -s ./src/BevCapital.Logon.API
 
   build:
     commands:
       - echo Update database on `date`
-      - dotnet ef database update -p ./ms-logon/src/BevCapital.Logon.Data -s ./ms-logon/src/BevCapital.Logon.API
+      - dotnet ef database update -p ./src/BevCapital.Logon.Data -s ./src/BevCapital.Logon.API
