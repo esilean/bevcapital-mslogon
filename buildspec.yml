@@ -39,6 +39,11 @@ phases:
     commands:
       # Take these images and push them to ECR
       - echo Pushing the Docker images...
+      - docker push ${ECR_REPO}/bevcapital-mslogon:latest
       - docker push ${ECR_REPO}/bevcapital-mslogon:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+
+      - docker push ${ECR_REPO}/bevcapital-mslogon-nginx:latest
       - docker push ${ECR_REPO}/bevcapital-mslogon-nginx:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+
+      - docker push ${ECR_REPO}/bevcapital-mslogon-xray:latest
       - docker push ${ECR_REPO}/bevcapital-mslogon-xray:${CODEBUILD_RESOLVED_SOURCE_VERSION}
