@@ -1,4 +1,5 @@
 using Amazon.XRay.Recorder.Core;
+using Amazon.XRay.Recorder.Core.Internal.Entities;
 using BevCapital.Logon.API.Filters;
 using BevCapital.Logon.API.Middlewares;
 using BevCapital.Logon.Application.UseCases.User;
@@ -108,7 +109,8 @@ namespace BevCapital.Logon.API
         private void Seed(AppUserContext context, ILogger<Startup> logger)
         {
             // XRAY - EFCore - AsyncLocal Problems
-            AWSXRayRecorder.Instance.BeginSegment("DB Migration"); // generates `TraceId` for you
+            String traceId = TraceId.NewId();
+            AWSXRayRecorder.Instance.BeginSegment("DB Migration", traceId);
             try
             {
                 logger.LogInformation("Initializing Database Migration.");
