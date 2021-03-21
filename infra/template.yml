@@ -27,18 +27,18 @@ Parameters:
 
   ServiceImageUrl:
     Type: String
-    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon:fb65d94afd60b99664d54ac911031e9d0b47f277
+    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon
     Description:
       The url of a docker image that contains the application process that
       will handle the traffic for this service
 
   NginxImageUrl:
     Type: String
-    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-nginx:fb65d94afd60b99664d54ac911031e9d0b47f277
+    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-nginx
 
   XRayImageUrl:
     Type: String
-    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-xray:fb65d94afd60b99664d54ac911031e9d0b47f277
+    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-xray
 
   ECSServiceAutoScalingRoleARN:
     Description: The ECS service auto scaling role ARN
@@ -66,7 +66,7 @@ Parameters:
 
   DesiredCount:
     Type: Number
-    Default: 2
+    Default: 1
     Description: How many copies of the service task to run
 
   Role:
@@ -180,7 +180,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 10
-      HealthCheckPath: /ms-logon/health/live
+      HealthCheckPath: /health/live
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
@@ -211,7 +211,7 @@ Resources:
         - Field: path-pattern
           Values:
             - !Ref "Path"
-            - !Sub ${Path}/*
+            #- !Sub ${Path}/*
       ListenerArn: !Ref "HttpListener"
       Priority: !Ref "Priority"
 
