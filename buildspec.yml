@@ -1,0 +1,35 @@
+version: 0.2
+env:
+  variables:
+    ECR_REPO: $$ACCOUNT_ID$$.dkr.ecr.$$AWS_REGION$$.amazonaws.com
+phases:
+  install:
+    runtime-versions:
+      docker: 19
+  pre_build:
+    commands:
+  build:
+    commands:
+      # Create ECR for MS-LOGON
+      # To do
+
+      # Create ECR_REPO
+      - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$AWS_REGION\$\$/'"${AWS_REGION}"'/g')
+      - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$ACCOUNT_ID\$\$/'"${ACCOUNT_ID}"'/g')
+
+      # Log in to the Docker CLI
+      - echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
+      # Login ECR
+      - aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REPO}
+
+      # Build the Docker images
+      - echo Building the production Docker image...
+      # Logon Microservice Image
+      - docker build -t bevcapital-mslogon -f ./Dockerfile ./src
+      - docker tag bevcapital-mslogon ${ECR_REPO}/bevcapital-mslogon:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+
+  post_build:
+    commands:
+      # Take these images and push them to ECR
+      - echo Pushing the Docker images...
+      - docker push ${ECR_REPO}/bevcapital-mslogon:${CODEBUILD_RESOLVED_SOURCE_VERSION}
