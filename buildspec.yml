@@ -27,9 +27,18 @@ phases:
       # Logon Microservice Image
       - docker build -t bevcapital-mslogon -f ./Dockerfile ./src
       - docker tag bevcapital-mslogon ${ECR_REPO}/bevcapital-mslogon:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      # Nginx Daemon Image
+      - docker build -t bevcapital-mslogon-nginx -f ./nginx/Dockerfile ./nginx
+      - docker tag bevcapital-mslogon-nginx ${ECR_REPO}/bevcapital-mslogon-nginx:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+
+      # X-Ray Daemon Image
+      - docker build -t bevcapital-mslogon-xray -f ./xray/Dockerfile ./xray
+      - docker tag bevcapital-mslogon-xray ${ECR_REPO}/bevcapital-mslogon-xray:${CODEBUILD_RESOLVED_SOURCE_VERSION}
 
   post_build:
     commands:
       # Take these images and push them to ECR
       - echo Pushing the Docker images...
       - docker push ${ECR_REPO}/bevcapital-mslogon:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker push ${ECR_REPO}/bevcapital-mslogon-nginx:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker push ${ECR_REPO}/bevcapital-mslogon-xray:${CODEBUILD_RESOLVED_SOURCE_VERSION}

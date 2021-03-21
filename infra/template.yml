@@ -19,9 +19,13 @@ Parameters:
     Default: ms-logon
     Description: A name for the service
 
+  ALBPublic:
+    Type: String
+    Description: A Load balance
+
   ImageUrl:
     Type: String
-    Default: nginx
+    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon:a51427e6722f0fed6cc6b54f5a9f596f9baeda2e
     Description:
       The url of a docker image that contains the application process that
       will handle the traffic for this service
@@ -87,8 +91,8 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Ref "ServiceName"
-      Cpu: !Ref "ContainerCpu"
-      Memory: !Ref "ContainerMemory"
+      Cpu: 500
+      Memory: 500
       TaskRoleArn:
         Fn::If:
           - "HasCustomRole"
@@ -96,15 +100,55 @@ Resources:
           - !Ref "AWS::NoValue"
       ContainerDefinitions:
         - Name: !Ref "ServiceName"
-          Cpu: !Ref "ContainerCpu"
-          Memory: !Ref "ContainerMemory"
+          Cpu: 100
+          Memory: 128
           Image: !Ref "ImageUrl"
           PortMappings:
-            - ContainerPort: !Ref "ContainerPort"
+            - ContainerPort: 80
+            - HostPort: 5001
+          Links:
+            - xray-daemon
+          Environment:
+            - name: AWS_XRAY_DAEMON_ADDRESS
+              value: xray-daemon:2000
           LogConfiguration:
             LogDriver: "awslogs"
             Options:
               awslogs-group: !Sub ${EnvironmentName}-service-${ServiceName}
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref "ServiceName"
+        - Name: nginx
+          Cpu: 100
+          Memory: 128
+          Essential: true
+          Image: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-nginx
+          PortMappings:
+            - ContainerPort: 80
+            - HostPort: 80
+            - Protocol: TCP
+          Links:
+            - !Ref "ServiceName"
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Sub ${EnvironmentName}-service-${ServiceName}-nginx
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref "ServiceName"
+        - Name: xray-daemon
+          Cpu: 100
+          Memory: 128
+          Essential: true
+          Image: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-xray
+          PortMappings:
+            - ContainerPort: 2000
+            - HostPort: 2000
+            - Protocol: UDP
+          Links:
+            - !Ref "ServiceName"
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Sub ${EnvironmentName}-service-${ServiceName}-xray
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: !Ref "ServiceName"
 
@@ -136,7 +180,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 10
-      HealthCheckPath: /
+      HealthCheckPath: /health/live
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
@@ -145,6 +189,16 @@ Resources:
       Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !Ref "VPC"
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ALBPublic
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref DefaultTargetGroup
 
   # Create a rule on the load balancer for routing traffic to the target group
   LoadBalancerRule:
@@ -156,7 +210,7 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values: [!Ref "Path"]
-      ListenerArn: !Ref "PublicListener"
+      ListenerArn: !Ref "HttpListener"
       Priority: !Ref "Priority"
 
   # Enable autoscaling for this service
