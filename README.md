@@ -1,4 +1,4 @@
-# BevCapital - Logon Microservice - Studying to deploy to ECS by Cloudformation
+# BevCapital - Logon Microservice
 
 ## Dev
 

@@ -11,7 +11,7 @@ phases:
   build:
     commands:
       # Create ECR for MS-LOGON
-      # To do
+      # TODO
 
       # Create ECR_REPO
       - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$AWS_REGION\$\$/'"${AWS_REGION}"'/g')

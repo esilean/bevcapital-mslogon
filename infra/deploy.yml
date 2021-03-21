@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Deploy a service into an ECS cluster behind a public load balancer.
+Description: Deploy a service into an ECS cluster behind a load balancer and nginx.
 Parameters:
   EnvironmentName:
     Type: String
@@ -20,40 +20,51 @@ Parameters:
     Default: ms-logon
     Description: A name for the service
 
-  ALBPublic:
+  ALB:
     Type: String
-    Default: arn:aws:elasticloadbalancing:sa-east-1:268919435141:loadbalancer/app/development/995a8b8e2d2459ee
-    Description: A Load balance
+    Default: ""
+    Description: A Load balancer
 
   ServiceImageUrl:
     Type: String
-    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon
-    Description: The url of a docker image that contains the application process that
+    Default: ""
+    Description: The url of a docker image that contains the application
 
   NginxImageUrl:
     Type: String
-    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-nginx
+    Default: ""
+    Description: The url of a docker image that contains the nginx
 
   XRayImageUrl:
     Type: String
-    Default: 268919435141.dkr.ecr.sa-east-1.amazonaws.com/bevcapital-mslogon-xray
+    Default: ""
+    Description: The url of a docker image that contains the xray-daemon
 
   ECSServiceAutoScalingRoleARN:
     Type: String
-    Default: arn:aws:iam::268919435141:role/ECSStack-ECSServiceAutoScalingRole-12ITYPCCMEBL4
+    Default: ""
     Description: The ECS service auto scaling role ARN
 
-  ContainerPort:
+  ServiceContainerPort:
     Type: Number
     Default: 5001
     Description: What port number the application inside the docker container is binding to
 
+  NginxContainerPort:
+    Type: Number
+    Default: 80
+    Description: What port number the nginx application inside the docker container is binding to
+
+  XRayContainerPort:
+    Type: Number
+    Default: 2000
+    Description: What port number the xray-daemon application inside the docker container is binding to
+
   Path:
     Type: String
     Default: "/ms-logon"
-    Description: A path on the public load balancer that this service
-      should be connected to. Use * to send all load balancer
-      traffic to this service.
+    Description: A path on the load balancer that this service
+      should be connected to.
 
   Priority:
     Type: Number
@@ -66,11 +77,6 @@ Parameters:
     Type: Number
     Default: 1
     Description: How many copies of the service task to run
-
-  XRayPort:
-    Type: Number
-    Default: 2000
-    Description: XRay port
 
   Role:
     Type: String
@@ -96,22 +102,22 @@ Resources:
     Properties:
       Family: !Ref "ServiceName"
       NetworkMode: bridge
-      Cpu: 500
-      Memory: 500
+      Cpu: 600
+      Memory: 768
       TaskRoleArn:
         Fn::If:
           - "HasCustomRole"
           - !Ref "Role"
           - !Ref "AWS::NoValue"
       ContainerDefinitions:
-        - Name: !Sub ${ServiceName}-Nginx
+        - Name: !Sub ${ServiceName}-nginx
           Cpu: 100
           Memory: 128
           Essential: true
           Image: !Ref "NginxImageUrl"
           PortMappings:
             - ContainerPort: 80
-              HostPort: 80
+              HostPort: !Ref NginxContainerPort
               Protocol: TCP
           Links:
             - !Ref "ServiceName"
@@ -127,12 +133,12 @@ Resources:
           Image: !Ref "ServiceImageUrl"
           PortMappings:
             - ContainerPort: 80
-              HostPort: 5001
+              HostPort: !Ref ServiceContainerPort
           Links:
             - xray-daemon
           Environment:
             - name: AWS_XRAY_DAEMON_ADDRESS
-              value: !Sub xray-daemon:${XRayPort}
+              value: !Sub xray-daemon:${XRayContainerPort}
           LogConfiguration:
             LogDriver: "awslogs"
             Options:
@@ -145,8 +151,8 @@ Resources:
           Essential: false
           Image: !Ref "XRayImageUrl"
           PortMappings:
-            - ContainerPort: !Ref XRayPort
-              HostPort: !Ref XRayPort
+            - ContainerPort: !Ref XRayContainerPort
+              HostPort: !Ref XRayContainerPort
               Protocol: udp
           LogConfiguration:
             LogDriver: "awslogs"
@@ -162,17 +168,17 @@ Resources:
     Type: AWS::ECS::Service
     DependsOn: LoadBalancerRule
     Properties:
-      ServiceName: !Ref "ServiceName"
-      Cluster: !Ref "Cluster"
+      ServiceName: !Ref ServiceName
+      Cluster: !Ref Cluster
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 75
       DesiredCount: !Ref "DesiredCount"
       TaskDefinition: !Ref "TaskDefinition"
       LoadBalancers:
-        - ContainerName: !Sub ${ServiceName}-Nginx
-          ContainerPort: 80
-          TargetGroupArn: !Ref "TargetGroup"
+        - ContainerName: !Sub ${ServiceName}-nginx
+          ContainerPort: !Ref NginxContainerPort
+          TargetGroupArn: !Ref TargetGroup
 
   # A target group. This is used for keeping track of all the tasks, and
   # what IP addresses / port numbers they have. You can query it yourself,
@@ -188,7 +194,7 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
       Name: !Sub ${ServiceName}-nginx
-      Port: 80
+      Port: !Ref NginxContainerPort
       Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !Ref "VPC"
@@ -196,7 +202,7 @@ Resources:
   HttpListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn: !Ref ALBPublic
+      LoadBalancerArn: !Ref ALB
       Port: 80
       Protocol: HTTP
       DefaultActions:
@@ -208,15 +214,15 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       Actions:
-        - TargetGroupArn: !Ref "TargetGroup"
+        - TargetGroupArn: !Ref TargetGroup
           Type: "forward"
       Conditions:
         - Field: path-pattern
           Values:
-            - !Ref "Path"
+            - !Ref Path
             - !Sub ${Path}/*
-      ListenerArn: !Ref "HttpListener"
-      Priority: !Ref "Priority"
+      ListenerArn: !Ref HttpListener
+      Priority: !Ref Priority
 
   # Enable autoscaling for this service
   ScalableTarget:
