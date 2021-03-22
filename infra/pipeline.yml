@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Creates a pipeline and deploys a service into an ECS cluster behind a load balancer and nginx.
 Parameters:
+  AccoundId:
+    Type: String
+    Default: ""
+    Description: The AWS Account Id
+
   EnvironmentName:
     Type: String
     Default: development
@@ -17,12 +22,12 @@ Parameters:
 
   ALB:
     Type: String
-    Default: arn:aws:elasticloadbalancing:sa-east-1:268919435141:loadbalancer/app/development-alb/353556200bb599c9
+    Default: ""
     Description: A Load balancer
 
   ECSServiceAutoScalingRoleARN:
     Type: String
-    Default: arn:aws:iam::268919435141:role/ECSStack-ECSServiceAutoScalingRole-1XR84NMGM05UT
+    Default: ""
     Description: The ECS service auto scaling role ARN
 
   Priority:
@@ -61,12 +66,13 @@ Parameters:
 
   DeploymentStackName:
     Type: String
+    Default: MSLogonService
     Description: >
       Name to give the production stack that is deployed as part of the pipeline
 
   GitHubPersonalAccessToken:
     Type: String
-    Default: abc4673cdcb07a6ec8fdc5681ab5c4450a38677d
+    Default: ""
     NoEcho: true
     Description: >
       Personal Access Token from GitHub that is used by CodePipeline to clone the source from the
@@ -121,17 +127,17 @@ Resources:
                 - Name: SourceArtifact
         - Name: Build
           Actions:
-            - Name: ValidateTemplate
-              RunOrder: 1
-              InputArtifacts:
-                - Name: SourceArtifact
-              ActionTypeId:
-                Category: Test
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref CodeBuildIntegrationProject
+            # - Name: ValidateTemplate
+            #   RunOrder: 1
+            #   InputArtifacts:
+            #     - Name: SourceArtifact
+            #   ActionTypeId:
+            #     Category: Test
+            #     Owner: AWS
+            #     Version: 1
+            #     Provider: CodeBuild
+            #   Configuration:
+            #     ProjectName: !Ref CodeBuildIntegrationProject
             - Name: GetECRImages
               RunOrder: 2
               InputArtifacts:
@@ -169,13 +175,13 @@ Resources:
                     "EnvironmentName" : "${EnvironmentName}",
                     "VPC":  "${VPC}",
                     "Cluster": "${Cluster}",
+                    "ALB": "${ALB}",                    
                     "ServiceImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "ServiceImageUrl"] },
-                    "ALB": "${ALB}",
                     "NginxImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "NginxImageUrl"] },
                     "XRayImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "XRayImageUrl"] },
                     "ECSServiceAutoScalingRoleARN": "${ECSServiceAutoScalingRoleARN}",
                     "Priority": "${Priority}",
-                    "DesiredCount": "${DesiredCount}",
+                    "DesiredCount": "${DesiredCount}"
                   }
 
   # S3 Bucket to hold artifacts for the Pipeline. Only requirement is that the S3 bucket has
@@ -225,13 +231,13 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         ImagePullCredentialsType: CODEBUILD
         ComputeType: BUILD_GENERAL1_SMALL
         PrivilegedMode: true
         EnvironmentVariables:
           - Name: "ACCOUNT_ID"
-            Value: "268919435141"
+            Value: !Sub ${AccoundId}
       LogsConfig:
         CloudWatchLogs:
           Status: ENABLED
@@ -350,7 +356,9 @@ Resources:
                 Action:
                   - codebuild:BatchGetBuilds
                   - codebuild:StartBuild
-                Resource: !Sub ${CodeBuildIntegrationProject.Arn}
+                Resource:
+                  - !Sub ${CodeBuildIntegrationProject.Arn}
+                  - !Sub ${CodeBuildGenerateImagesProject.Arn}
               - Sid: CreateAndUpdateDeploymentStack
                 Effect: Allow
                 Action:
@@ -416,6 +424,26 @@ Resources:
                 Effect: Allow
                 Action: cloudformation:ValidateTemplate
                 Resource: "*"
+              - Sid: ECR
+                Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:GetRepositoryPolicy
+                  - ecr:DescribeRepositories
+                  - ecr:ListImages
+                  - ecr:DescribeImages
+                  - ecr:BatchGetImage
+                  - ecr:GetLifecyclePolicy
+                  - ecr:GetLifecyclePolicyPreview
+                  - ecr:ListTagsForResource
+                  - ecr:DescribeImageScanFindings
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                Resource: "*"
 
   # IAM Policy that determines what permissions CloudFormation has when deploying the production
   # stack. This policy defines the minimum permissions necessary to carry out deployments.
@@ -426,7 +454,8 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Effect: Allow
+          - Sid: S3BucketPermissions
+            Effect: Allow
             Action:
               - s3:CreateBucket
               - s3:DeleteBucket
@@ -437,6 +466,41 @@ Resources:
               - s3:GetBucketLogging
               - s3:PutBucketLogging
             Resource: arn:aws:s3:::*
+          - Sid: CloudFormationPermissions
+            Effect: Allow
+            Action:
+              - ec2:DescribeInstances
+              - ec2:DescribeVpcs
+              - elasticloadbalancing:DescribeListeners
+              - elasticloadbalancing:CreateListener
+              - elasticloadbalancing:DeleteListener
+              - elasticloadbalancing:ModifyListener
+              - elasticloadbalancing:DescribeRules
+              - elasticloadbalancing:CreateRule
+              - elasticloadbalancing:ModifyRule
+              - elasticloadbalancing:DeleteRule
+              - elasticloadbalancing:DescribeTargetGroups
+              - elasticloadbalancing:CreateTargetGroup
+              - elasticloadbalancing:ModifyTargetGroup
+              - elasticloadbalancing:ModifyTargetGroupAttributes
+              - elasticloadbalancing:DeleteTargetGroup
+              - elasticloadbalancing:DescribeLoadBalancers
+              - elasticloadbalancing:DescribeLoadBalancerAttributes
+              - elasticloadbalancing:RegisterTargets
+              - elasticloadbalancing:DeregisterTargets
+              - ecs:RegisterTaskDefinition
+              - ecs:DeregisterTaskDefinition
+              - ecs:DescribeServices
+              - ecs:CreateService
+              - ecs:UpdateService
+              - ecs:DeleteService
+              - ecr:GetAuthorizationToken
+              - ecr:DescribeImages
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DeleteLogGroup
+            Resource: "*"
 
   # IAM Policy that grants permissions required for Taskcat execution.
   # Note: This policy doesn't include any permissions required to deploy the test stacks, these

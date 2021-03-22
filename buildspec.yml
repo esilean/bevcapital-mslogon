@@ -17,11 +17,6 @@ phases:
       - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$AWS_REGION\$\$/'"${AWS_REGION}"'/g')
       - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$ACCOUNT_ID\$\$/'"${ACCOUNT_ID}"'/g')
 
-      # Log in to the Docker CLI
-      #- echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
-      # Login ECR
-      #- aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REPO}
-
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
@@ -59,6 +54,7 @@ phases:
       - docker push ${ECR_REPO}/bevcapital-mslogon-xray:latest
       - docker push ${ECR_REPO}/bevcapital-mslogon-xray:$IMAGE_TAG
 
+      # Generate json with service images endpoint
       - printf '{' >> serviceimages.json
       - printf ' "ServiceImageUrl":"%s", ' ${ECR_REPO}/bevcapital-mslogon:latest >> serviceimages.json
       - printf ' "NginxImageUrl":"%s", ' ${ECR_REPO}/bevcapital-mslogon-nginx:latest >> serviceimages.json
