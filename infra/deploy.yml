@@ -20,15 +20,15 @@ Parameters:
     Default: ms-logon
     Description: A name for the service
 
-  ALB:
-    Type: String
-    Default: ""
-    Description: A Load balancer
-
   ServiceImageUrl:
     Type: String
     Default: ""
     Description: The url of a docker image that contains the application
+
+  ALB:
+    Type: String
+    Default: ""
+    Description: A Load balancer
 
   NginxImageUrl:
     Type: String

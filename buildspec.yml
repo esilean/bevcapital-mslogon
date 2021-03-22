@@ -18,25 +18,32 @@ phases:
       - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$ACCOUNT_ID\$\$/'"${ACCOUNT_ID}"'/g')
 
       # Log in to the Docker CLI
-      - echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
+      #- echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
       # Login ECR
-      - aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REPO}
+      #- aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REPO}
+
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - echo $IMAGE_TAG
 
       # Build the Docker images
       - echo Building the production Docker image...
       # Logon Microservice Image
       - docker build -t bevcapital-mslogon -f ./Dockerfile ./src
-      - docker tag bevcapital-mslogon ${ECR_REPO}/bevcapital-mslogon:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker tag bevcapital-mslogon ${ECR_REPO}/bevcapital-mslogon:$IMAGE_TAG
       - docker tag bevcapital-mslogon ${ECR_REPO}/bevcapital-mslogon:latest
 
       # Nginx Daemon Image
       - docker build -t bevcapital-mslogon-nginx -f ./nginx/Dockerfile ./nginx
-      - docker tag bevcapital-mslogon-nginx ${ECR_REPO}/bevcapital-mslogon-nginx:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker tag bevcapital-mslogon-nginx ${ECR_REPO}/bevcapital-mslogon-nginx:$IMAGE_TAG
       - docker tag bevcapital-mslogon-nginx ${ECR_REPO}/bevcapital-mslogon-nginx:latest
 
       # X-Ray Daemon Image
       - docker build -t bevcapital-mslogon-xray -f ./xray/Dockerfile ./xray
-      - docker tag bevcapital-mslogon-xray ${ECR_REPO}/bevcapital-mslogon-xray:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker tag bevcapital-mslogon-xray ${ECR_REPO}/bevcapital-mslogon-xray:$IMAGE_TAG
       - docker tag bevcapital-mslogon-xray ${ECR_REPO}/bevcapital-mslogon-xray:latest
 
   post_build:
@@ -44,10 +51,19 @@ phases:
       # Take these images and push them to ECR
       - echo Pushing the Docker images...
       - docker push ${ECR_REPO}/bevcapital-mslogon:latest
-      - docker push ${ECR_REPO}/bevcapital-mslogon:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker push ${ECR_REPO}/bevcapital-mslogon:$IMAGE_TAG
 
       - docker push ${ECR_REPO}/bevcapital-mslogon-nginx:latest
-      - docker push ${ECR_REPO}/bevcapital-mslogon-nginx:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker push ${ECR_REPO}/bevcapital-mslogon-nginx:$IMAGE_TAG
 
       - docker push ${ECR_REPO}/bevcapital-mslogon-xray:latest
-      - docker push ${ECR_REPO}/bevcapital-mslogon-xray:${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker push ${ECR_REPO}/bevcapital-mslogon-xray:$IMAGE_TAG
+
+      - printf '{' >> serviceimages.json
+      - printf ' "ServiceImageUrl":"%s", ' ${ECR_REPO}/bevcapital-mslogon:latest >> serviceimages.json
+      - printf ' "NginxImageUrl":"%s", ' ${ECR_REPO}/bevcapital-mslogon-nginx:latest >> serviceimages.json
+      - printf ' "XRayImageUrl":"%s" ' ${ECR_REPO}/bevcapital-mslogon-xray:latest >> serviceimages.json
+      - printf '}' >> serviceimages.json
+artifacts:
+  files:
+    - serviceimages.json
