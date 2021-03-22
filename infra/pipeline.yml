@@ -17,12 +17,12 @@ Parameters:
 
   ALB:
     Type: String
-    Default: ""
+    Default: arn:aws:elasticloadbalancing:sa-east-1:268919435141:loadbalancer/app/development-alb/353556200bb599c9
     Description: A Load balancer
 
   ECSServiceAutoScalingRoleARN:
     Type: String
-    Default: ""
+    Default: arn:aws:iam::268919435141:role/ECSStack-ECSServiceAutoScalingRole-1XR84NMGM05UT
     Description: The ECS service auto scaling role ARN
 
   Priority:
