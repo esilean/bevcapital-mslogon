@@ -7,7 +7,6 @@ ServiceDependencies
 serviceDependencies.*
 TestResults/
 gitcommit
-appsettings.Production.json
 *.csv
 
 

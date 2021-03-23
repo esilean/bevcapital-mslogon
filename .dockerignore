@@ -6,7 +6,6 @@ PublishProfiles
 ServiceDependencies
 serviceDependencies.*
 TestResults/
-*.Production.json
 
 # misc
 .DS_Store
