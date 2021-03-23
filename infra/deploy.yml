@@ -102,8 +102,8 @@ Resources:
     Properties:
       Family: !Ref "ServiceName"
       NetworkMode: bridge
-      Cpu: 600
-      Memory: 768
+      Cpu: 512
+      Memory: 512
       TaskRoleArn:
         Fn::If:
           - "HasCustomRole"
@@ -111,7 +111,7 @@ Resources:
           - !Ref "AWS::NoValue"
       ContainerDefinitions:
         - Name: !Sub ${ServiceName}-nginx
-          Cpu: 100
+          Cpu: 128
           Memory: 128
           Essential: true
           Image: !Ref "NginxImageUrl"
@@ -128,7 +128,7 @@ Resources:
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: !Sub ${EnvironmentName}-${ServiceName}-nginx
         - Name: !Ref "ServiceName"
-          Cpu: 100
+          Cpu: 128
           Memory: 128
           Image: !Ref "ServiceImageUrl"
           PortMappings:
@@ -146,7 +146,7 @@ Resources:
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: !Sub ${EnvironmentName}-${ServiceName}
         - Name: xray-daemon
-          Cpu: 100
+          Cpu: 128
           Memory: 128
           Essential: false
           Image: !Ref "XRayImageUrl"

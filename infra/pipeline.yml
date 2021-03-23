@@ -127,17 +127,17 @@ Resources:
                 - Name: SourceArtifact
         - Name: Build
           Actions:
-            - Name: ValidateTemplate
-              RunOrder: 1
-              InputArtifacts:
-                - Name: SourceArtifact
-              ActionTypeId:
-                Category: Test
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref CodeBuildIntegrationProject
+            # - Name: ValidateTemplate
+            #   RunOrder: 1
+            #   InputArtifacts:
+            #     - Name: SourceArtifact
+            #   ActionTypeId:
+            #     Category: Test
+            #     Owner: AWS
+            #     Version: 1
+            #     Provider: CodeBuild
+            #   Configuration:
+            #     ProjectName: !Ref CodeBuildIntegrationProject
             - Name: GetECRImages
               RunOrder: 2
               InputArtifacts:
@@ -210,6 +210,7 @@ Resources:
   PipelineWebhook:
     Type: AWS::CodePipeline::Webhook
     Properties:
+      Name: !Sub ${GitHubRepositoryName}-pipeline-webhook
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
         SecretToken: !Sub ${GitHubPersonalAccessToken}
@@ -224,7 +225,7 @@ Resources:
   CodeBuildGenerateImagesProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: CodeBuildGenerateImagesProject
+      Name: !Sub ${GitHubRepositoryName}-generateimages
       ServiceRole: !Sub ${CodeBuildRole.Arn}
       TimeoutInMinutes: 15
       Artifacts:
@@ -236,8 +237,10 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         PrivilegedMode: true
         EnvironmentVariables:
-          - Name: "ACCOUNT_ID"
+          - Name: ACCOUNT_ID
             Value: !Sub ${AccoundId}
+          - Name: ASPNETCORE_ENVIRONMENT
+            Value: Production
       LogsConfig:
         CloudWatchLogs:
           Status: ENABLED
@@ -282,6 +285,7 @@ Resources:
   CodeBuildPRProject:
     Type: AWS::CodeBuild::Project
     Properties:
+      Name: !Sub ${GitHubRepositoryName}-pull-requests
       Artifacts:
         Type: NO_ARTIFACTS
       Cache:
@@ -296,7 +300,6 @@ Resources:
       LogsConfig:
         CloudWatchLogs:
           Status: ENABLED
-      Name: !Sub ${GitHubRepositoryName}-pull-requests
       ServiceRole: !Sub ${CodeBuildRole.Arn}
       Source:
         GitCloneDepth: 1
