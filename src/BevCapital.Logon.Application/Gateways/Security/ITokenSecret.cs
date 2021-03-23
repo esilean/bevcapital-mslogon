@@ -5,6 +5,6 @@ namespace BevCapital.Logon.Application.Gateways.Security
 {
     public interface ITokenSecret : IDisposable
     {
-        Task<string> GetSecret();
+        Task<string> GetSecretAsync();
     }
 }

@@ -22,7 +22,7 @@ namespace BevCapital.Logon.Infra.Security
 
         public async Task<string> CreateToken(AppUser appUser)
         {
-            var secretKey = await _tokenSecret.GetSecret();
+            var secretKey = await _tokenSecret.GetSecretAsync();
             if (string.IsNullOrWhiteSpace(secretKey))
                 return secretKey;
 

@@ -45,9 +45,9 @@ namespace BevCapital.Logon.API
             });
 
             services
+                    .ConfigureCommonServices(Configuration)
                     .ConfigureSwaggerLogon()
                     .ConfigureSecurity()
-                    .ConfigureCommonServices(Configuration)
                     .ConfigureDistributedCache(Configuration)
                     .ConfigureAWS(Configuration, HostingEnvironment)
                     .ConfigureDatabase(Configuration)

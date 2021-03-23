@@ -22,12 +22,12 @@ Parameters:
 
   ALB:
     Type: String
-    Default: arn:aws:elasticloadbalancing:sa-east-1:268919435141:loadbalancer/app/development-alb/7d3fba7ad3d32e24
+    Default: ""
     Description: A Load balancer
 
   ECSServiceAutoScalingRoleARN:
     Type: String
-    Default: arn:aws:iam::268919435141:role/ECSStack-ECSServiceAutoScalingRole-J3QV7XPOBJYS
+    Default: ""
     Description: The ECS service auto scaling role ARN
 
   Priority:
@@ -127,17 +127,17 @@ Resources:
                 - Name: SourceArtifact
         - Name: Build
           Actions:
-            # - Name: ValidateTemplate
-            #   RunOrder: 1
-            #   InputArtifacts:
-            #     - Name: SourceArtifact
-            #   ActionTypeId:
-            #     Category: Test
-            #     Owner: AWS
-            #     Version: 1
-            #     Provider: CodeBuild
-            #   Configuration:
-            #     ProjectName: !Ref CodeBuildIntegrationProject
+            - Name: ValidateTemplate
+              RunOrder: 1
+              InputArtifacts:
+                - Name: SourceArtifact
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildIntegrationProject
             - Name: GetECRImages
               RunOrder: 2
               InputArtifacts:
@@ -469,6 +469,7 @@ Resources:
           - Sid: CloudFormationPermissions
             Effect: Allow
             Action:
+              - iam:PassRole
               - ec2:DescribeInstances
               - ec2:DescribeVpcs
               - elasticloadbalancing:DescribeListeners
@@ -488,6 +489,13 @@ Resources:
               - elasticloadbalancing:DescribeLoadBalancerAttributes
               - elasticloadbalancing:RegisterTargets
               - elasticloadbalancing:DeregisterTargets
+              - application-autoscaling:DescribeScalingActivities
+              - application-autoscaling:DescribeScalableTargets
+              - application-autoscaling:RegisterScalableTarget
+              - application-autoscaling:DeregisterScalableTarget
+              - application-autoscaling:DescribeScalingPolicies
+              - application-autoscaling:PutScalingPolicy
+              - application-autoscaling:DeleteScalingPolicy
               - ecs:RegisterTaskDefinition
               - ecs:DeregisterTaskDefinition
               - ecs:DescribeServices
@@ -500,6 +508,14 @@ Resources:
               - logs:CreateLogStream
               - logs:PutLogEvents
               - logs:DeleteLogGroup
+              - cloudwatch:DescribeAlarms
+              - cloudwatch:DeleteAlarms
+              - cloudwatch:DescribeAlarmsForMetric
+              - cloudwatch:DisableAlarmActions
+              - cloudwatch:EnableAlarmActions
+              - cloudwatch:GetMetricData
+              - cloudwatch:PutMetricAlarm
+              - cloudwatch:PutMetricData
             Resource: "*"
 
   # IAM Policy that grants permissions required for Taskcat execution.

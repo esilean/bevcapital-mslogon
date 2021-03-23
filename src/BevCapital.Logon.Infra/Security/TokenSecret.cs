@@ -27,7 +27,7 @@ namespace BevCapital.Logon.Infra.Security
             _amazonSecretsManager = new AmazonSecretsManagerClient(RegionEndpoint.SAEast1);
         }
 
-        public async Task<string> GetSecret()
+        public async Task<string> GetSecretAsync()
         {
             try
             {
