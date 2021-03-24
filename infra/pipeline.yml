@@ -25,6 +25,11 @@ Parameters:
     Default: ""
     Description: A Load balancer
 
+  HttpListener:
+    Type: String
+    Default: ""
+    Description: A Listener of the Load balancer
+
   ECSServiceAutoScalingRoleARN:
     Type: String
     Default: ""
@@ -87,7 +92,7 @@ Parameters:
     AllowedValues:
       - "true"
       - "false"
-    Default: "true"
+    Default: "false"
     Description: >
       Determines whether or not your personal access token is passed to CodeBuild. Set this value to
       "true" if this is the first time using CodeBuild with GitHub, as CodeBuild only supports one
@@ -175,7 +180,8 @@ Resources:
                     "EnvironmentName" : "${EnvironmentName}",
                     "VPC":  "${VPC}",
                     "Cluster": "${Cluster}",
-                    "ALB": "${ALB}",                    
+                    "ALB": "${ALB}",
+                    "HttpListener": "${HttpListener}",
                     "ServiceImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "ServiceImageUrl"] },
                     "NginxImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "NginxImageUrl"] },
                     "XRayImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "XRayImageUrl"] },

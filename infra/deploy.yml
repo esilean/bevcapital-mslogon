@@ -30,6 +30,11 @@ Parameters:
     Default: ""
     Description: A Load balancer
 
+  HttpListener:
+    Type: String
+    Default: ""
+    Description: A Listener of the Load balancer
+
   NginxImageUrl:
     Type: String
     Default: ""
@@ -198,16 +203,6 @@ Resources:
       Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !Ref "VPC"
-
-  HttpListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref ALB
-      Port: 80
-      Protocol: HTTP
-      DefaultActions:
-        - Type: forward
-          TargetGroupArn: !Ref TargetGroup
 
   # Create a rule on the load balancer for routing traffic to the target group
   LoadBalancerRule:
