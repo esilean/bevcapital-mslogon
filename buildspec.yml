@@ -10,10 +10,7 @@ phases:
     commands:
   build:
     commands:
-      # Create ECR for MS-LOGON
-      # TODO
-
-      # Create ECR_REPO
+      - echo Replacing variables to create erc repo url
       - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$AWS_REGION\$\$/'"${AWS_REGION}"'/g')
       - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$ACCOUNT_ID\$\$/'"${ACCOUNT_ID}"'/g')
 
@@ -24,41 +21,44 @@ phases:
       - IMAGE_TAG=${COMMIT_HASH:=latest}
       - echo $IMAGE_TAG
 
-      # Build the Docker images
+      - REPO_LOGON_NAME=bevcapital-mslogon
+      - REPO_LOGON_NGINX_NAME=bevcapital-mslogon-nginx
+      - REPO_LOGON_XRAY_NAME=bevcapital-mslogon-xray
+
       - echo Building the production Docker image...
-      # Logon Microservice Image
-      - docker build -t bevcapital-mslogon -f ./Dockerfile ./src
-      - docker tag bevcapital-mslogon ${ECR_REPO}/bevcapital-mslogon:$IMAGE_TAG
-      - docker tag bevcapital-mslogon ${ECR_REPO}/bevcapital-mslogon:latest
+      # Microservice Image
+      - docker build -t ${REPO_LOGON_NAME} -f ./Dockerfile ./src
+      - docker tag ${REPO_LOGON_NAME} ${ECR_REPO}/${REPO_LOGON_NAME}:$IMAGE_TAG
+      - docker tag ${REPO_LOGON_NAME} ${ECR_REPO}/${REPO_LOGON_NAME}:latest
 
       # Nginx Daemon Image
-      - docker build -t bevcapital-mslogon-nginx -f ./nginx/Dockerfile ./nginx
-      - docker tag bevcapital-mslogon-nginx ${ECR_REPO}/bevcapital-mslogon-nginx:$IMAGE_TAG
-      - docker tag bevcapital-mslogon-nginx ${ECR_REPO}/bevcapital-mslogon-nginx:latest
+      - docker build -t ${REPO_LOGON_NGINX_NAME} -f ./nginx/Dockerfile ./nginx
+      - docker tag ${REPO_LOGON_NGINX_NAME} ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}:$IMAGE_TAG
+      - docker tag ${REPO_LOGON_NGINX_NAME} ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}}:latest
 
       # X-Ray Daemon Image
-      - docker build -t bevcapital-mslogon-xray -f ./xray/Dockerfile ./xray
-      - docker tag bevcapital-mslogon-xray ${ECR_REPO}/bevcapital-mslogon-xray:$IMAGE_TAG
-      - docker tag bevcapital-mslogon-xray ${ECR_REPO}/bevcapital-mslogon-xray:latest
+      - docker build -t ${REPO_LOGON_XRAY_NAME} -f ./xray/Dockerfile ./xray
+      - docker tag ${REPO_LOGON_XRAY_NAME} ${ECR_REPO}/${REPO_LOGON_XRAY_NAME}:$IMAGE_TAG
+      - docker tag ${REPO_LOGON_XRAY_NAME} ${ECR_REPO}/${REPO_LOGON_XRAY_NAME}:latest
 
   post_build:
     commands:
       # Take these images and push them to ECR
       - echo Pushing the Docker images...
-      - docker push ${ECR_REPO}/bevcapital-mslogon:latest
-      - docker push ${ECR_REPO}/bevcapital-mslogon:$IMAGE_TAG
+      - docker push ${ECR_REPO}/${REPO_LOGON_NAME}:latest
+      - docker push ${ECR_REPO}/${REPO_LOGON_NAME}:$IMAGE_TAG
 
-      - docker push ${ECR_REPO}/bevcapital-mslogon-nginx:latest
-      - docker push ${ECR_REPO}/bevcapital-mslogon-nginx:$IMAGE_TAG
+      - docker push ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}:latest
+      - docker push ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}:$IMAGE_TAG
 
-      - docker push ${ECR_REPO}/bevcapital-mslogon-xray:latest
-      - docker push ${ECR_REPO}/bevcapital-mslogon-xray:$IMAGE_TAG
+      - docker push ${ECR_REPO}/${REPO_LOGON_XRAY_NAME}:latest
+      - docker push ${ECR_REPO}/${REPO_LOGON_XRAY_NAME}:$IMAGE_TAG
 
       # Generate json with service images endpoint
       - printf '{' >> serviceimages.json
-      - printf ' "ServiceImageUrl":"%s", ' ${ECR_REPO}/bevcapital-mslogon:latest >> serviceimages.json
-      - printf ' "NginxImageUrl":"%s", ' ${ECR_REPO}/bevcapital-mslogon-nginx:latest >> serviceimages.json
-      - printf ' "XRayImageUrl":"%s" ' ${ECR_REPO}/bevcapital-mslogon-xray:latest >> serviceimages.json
+      - printf ' "ServiceImageUrl":"%s", ' ${ECR_REPO}/${REPO_LOGON_NAME}:latest >> serviceimages.json
+      - printf ' "NginxImageUrl":"%s", ' ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}:latest >> serviceimages.json
+      - printf ' "XRayImageUrl":"%s" ' ${ECR_REPO}/${REPO_LOGON_XRAY_NAME}:latest >> serviceimages.json
       - printf '}' >> serviceimages.json
 artifacts:
   files:

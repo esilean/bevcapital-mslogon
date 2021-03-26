@@ -144,6 +144,14 @@ Resources:
           Environment:
             - name: AWS_XRAY_DAEMON_ADDRESS
               value: !Sub xray-daemon:${XRayContainerPort}
+            - name: RDS_ENDPOINT
+              value: ""
+            - name: RDS_PASSWORD
+              value: ""
+            - name: CACHE_ENDPOINT
+              value: ""
+            - name: CACHE_PASSWORD
+              value: ""
           LogConfiguration:
             LogDriver: "awslogs"
             Options:

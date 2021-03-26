@@ -1,4 +1,5 @@
-﻿using BevCapital.Logon.Data.Context;
+﻿using System;
+using BevCapital.Logon.Data.Context;
 using BevCapital.Logon.Data.Repositories;
 using BevCapital.Logon.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,16 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
     {
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
         {
+            var connString = configuration.GetConnectionString("SqlCNN");
+
+            var rdsEndpoint = Environment.GetEnvironmentVariable("RDS_ENDPOINT");
+            var rdsPassword = Environment.GetEnvironmentVariable("RDS_PASSWORD");
+            connString.Replace("RDS_ENDPOINT", rdsEndpoint);
+            connString.Replace("RDS_PASSWORD", rdsPassword);
+
             services.AddDbContext<AppUserContext>(opts =>
             {
-                opts.UseMySql(configuration.GetConnectionString("SqlCNN"));
+                opts.UseMySql(connString);
                 opts.AddXRayInterceptor(true);
             });
 
