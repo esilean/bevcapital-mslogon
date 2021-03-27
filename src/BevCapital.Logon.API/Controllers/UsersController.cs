@@ -19,7 +19,7 @@ namespace BevCapital.Logon.API.Controllers
         [HttpGet("list")]
         public async Task<ActionResult<List<AppUserOut<Guid>>>> List()
         {
-            return await _mediator.Send(new List.Query());
+            return await _mediator.Send(new List.ListAppUserQuery { });
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace BevCapital.Logon.API.Controllers
         [HttpGet("detail/{id}")]
         public async Task<ActionResult<AppUserOut<Guid>>> Detail(Guid id)
         {
-            return await _mediator.Send(new Details.Query { Id = id });
+            return await _mediator.Send(new Details.DetailAppUserQuery { Id = id });
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace BevCapital.Logon.API.Controllers
         /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost("create")]
-        public async Task<ActionResult<Unit>> Create(Create.Command command)
+        public async Task<ActionResult<Unit>> Create(Create.CreateAppUserCommand command)
         {
             return await _mediator.Send(command);
         }
@@ -52,7 +52,7 @@ namespace BevCapital.Logon.API.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<ActionResult<Unit>> Delete(Guid id)
         {
-            await _mediator.Send(new Delete.Command { Id = id });
+            await _mediator.Send(new Delete.DeleteAppUserCommand { Id = id });
             return NoContent();
         }
     }

@@ -7,7 +7,7 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
 {
     public static class HealthExtensions
     {
-        public static IServiceCollection ConfigureHealthCheck(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddAppHealthCheck(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHealthChecks()
                     .AddMySql(

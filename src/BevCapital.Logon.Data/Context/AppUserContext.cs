@@ -12,10 +12,10 @@ namespace BevCapital.Logon.Data.Context
 
         public DbSet<AppUser> AppUsers { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new AppUserEntityMapping());
+            base.OnModelCreating(builder);
+            builder.ApplyConfiguration(new AppUserEntityMapping());
         }
     }
 }

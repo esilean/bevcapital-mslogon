@@ -45,18 +45,21 @@ namespace BevCapital.Logon.API
             });
 
             services
-                    .ConfigureCommonServices(Configuration)
-                    .ConfigureSwaggerLogon()
-                    .ConfigureSecurity()
-                    .ConfigureDistributedCache(Configuration)
-                    .ConfigureAWS(Configuration, HostingEnvironment)
-                    .ConfigureDatabase(Configuration)
-                    .ConfigureHealthCheck(Configuration);
+                    .AddAppCore(Configuration)
+                    .AddAppSwaggerLogon()
+                    .AddAppSecurity()
+                    .AddAppDistributedCache(Configuration)
+                    .AddAppAWS(Configuration, HostingEnvironment)
+                    .AddAppDatabase(Configuration)
+                    .AddAppOutbox(Configuration)
+                    .AddAppMessageBrokers()
+                    .AddAppHealthCheck(Configuration);
         }
 
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              AppUserContext context,
+                              AppUserContext appUserContext,
+                              OutboxContext outboxContext,
                               ILogger<Startup> logger)
         {
             Log.Information($"Hosting enviroment = {env.EnvironmentName}");
@@ -103,19 +106,23 @@ namespace BevCapital.Logon.API
                 });
             });
 
-            Seed(context, logger);
+            Seed(appUserContext, outboxContext, logger);
         }
 
-        private void Seed(AppUserContext context, ILogger<Startup> logger)
+        private void Seed(AppUserContext appUserContext, OutboxContext outboxContext, ILogger<Startup> logger)
         {
             // XRAY - EFCore - AsyncLocal Problems
-            String traceId = TraceId.NewId();
+            string traceId = TraceId.NewId();
             AWSXRayRecorder.Instance.BeginSegment("DB Migration", traceId);
             try
             {
-                logger.LogInformation("Initializing Database Migration.");
-                context.Database.Migrate();
-                logger.LogInformation("Finishing Database Migration...");
+                logger.LogInformation("Initializing AppUserContext Database Migration.");
+                appUserContext.Database.Migrate();
+                logger.LogInformation("Finishing AppUserContext Database Migration...");
+                logger.LogInformation("Initializing OutboxContext Database Migration.");
+                outboxContext.Database.Migrate();
+                logger.LogInformation("Finishing OutboxContext Database Migration...");
+
             }
             catch (Exception e)
             {

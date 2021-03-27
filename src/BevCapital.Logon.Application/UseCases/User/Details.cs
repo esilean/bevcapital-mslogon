@@ -12,12 +12,12 @@ namespace BevCapital.Logon.Application.UseCases.User
 {
     public class Details
     {
-        public class Query : IRequest<AppUserOut<Guid>>
+        public class DetailAppUserQuery : IRequest<AppUserOut<Guid>>
         {
             public Guid Id { get; set; }
         }
 
-        public class Handler : IRequestHandler<Query, AppUserOut<Guid>>
+        public class Handler : IRequestHandler<DetailAppUserQuery, AppUserOut<Guid>>
         {
 
             private readonly IUnitOfWork _unitOfWork;
@@ -31,9 +31,9 @@ namespace BevCapital.Logon.Application.UseCases.User
                 _appNotificationHandler = appNotificationHandler;
             }
 
-            public async Task<AppUserOut<Guid>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<AppUserOut<Guid>> Handle(DetailAppUserQuery request, CancellationToken cancellationToken)
             {
-                var user = await _unitOfWork.Users.FindAsync(request.Id);
+                var user = await _unitOfWork.Users.FindAsync(new object[] { request.Id }, cancellationToken);
                 if (user == null)
                 {
                     _appNotificationHandler.AddNotification(Keys.APPUSER, Messages.USER_NOT_FOUND);

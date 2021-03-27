@@ -3,6 +3,7 @@ using BevCapital.Logon.Domain.Entities;
 using BevCapital.Logon.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BevCapital.Logon.Data.Repositories
@@ -16,24 +17,24 @@ namespace BevCapital.Logon.Data.Repositories
             _appUserContext = appUserContext;
         }
 
-        public async Task AddAsync(AppUser user)
+        public async Task AddAsync(AppUser user, CancellationToken cancellationToken)
         {
-            await _appUserContext.AppUsers.AddAsync(user);
+            await _appUserContext.AppUsers.AddAsync(user, cancellationToken);
         }
 
-        public async Task<IEnumerable<AppUser>> GetAllAsync()
+        public async Task<IEnumerable<AppUser>> GetAllAsync(CancellationToken cancellationToken)
         {
-            return await _appUserContext.AppUsers.ToListAsync();
+            return await _appUserContext.AppUsers.ToListAsync(cancellationToken);
         }
 
-        public async Task<AppUser> GetByEmailAsync(string email)
+        public async Task<AppUser> GetByEmailAsync(string email, CancellationToken cancellationToken)
         {
-            return await _appUserContext.AppUsers.FirstOrDefaultAsync(x => x.Email == email);
+            return await _appUserContext.AppUsers.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
         }
 
-        public async Task<AppUser> FindAsync<TId>(TId id)
+        public async Task<AppUser> FindAsync(object[] keys, CancellationToken cancellationToken)
         {
-            return await _appUserContext.AppUsers.FindAsync(id);
+            return await _appUserContext.AppUsers.FindAsync(keyValues: keys, cancellationToken: cancellationToken);
         }
 
         public void Remove(AppUser user)

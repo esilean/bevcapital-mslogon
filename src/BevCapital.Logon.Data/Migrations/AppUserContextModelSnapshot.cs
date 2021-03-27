@@ -23,7 +23,7 @@ namespace BevCapital.Logon.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
@@ -46,7 +46,7 @@ namespace BevCapital.Logon.Data.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp(6)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");

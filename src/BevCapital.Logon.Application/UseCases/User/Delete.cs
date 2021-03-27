@@ -1,5 +1,8 @@
-﻿using BevCapital.Logon.Application.Errors;
+﻿using AutoMapper;
+using BevCapital.Logon.Application.Errors;
 using BevCapital.Logon.Domain.Constants;
+using BevCapital.Logon.Domain.Entities;
+using BevCapital.Logon.Domain.Events.AppUserEvents;
 using BevCapital.Logon.Domain.Notifications;
 using BevCapital.Logon.Domain.Repositories;
 using MediatR;
@@ -13,29 +16,32 @@ namespace BevCapital.Logon.Application.UseCases.User
 {
     public class Delete
     {
-        public class Command : IRequest
+        public class DeleteAppUserCommand : IRequest
         {
             public Guid Id { get; set; }
         }
 
-        public class Handler : IRequestHandler<Command>
+        public class Handler : IRequestHandler<DeleteAppUserCommand>
         {
             private readonly IUnitOfWork _unitOfWork;
             private readonly IAppNotificationHandler _appNotificationHandler;
             private readonly IDistributedCache _distributedCache;
+            private readonly IMapper _mapper;
 
             public Handler(IUnitOfWork unitOfWork,
                            IAppNotificationHandler appNotificationHandler,
-                           IDistributedCache distributedCache)
+                           IDistributedCache distributedCache,
+                           IMapper mapper)
             {
                 _unitOfWork = unitOfWork;
                 _appNotificationHandler = appNotificationHandler;
                 _distributedCache = distributedCache;
+                _mapper = mapper;
             }
 
-            public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
+            public async Task<Unit> Handle(DeleteAppUserCommand request, CancellationToken cancellationToken)
             {
-                var appUser = await _unitOfWork.Users.FindAsync(request.Id);
+                var appUser = await _unitOfWork.Users.FindAsync(new object[] { request.Id }, cancellationToken);
                 if (appUser == null)
                 {
                     _appNotificationHandler.AddNotification(Keys.APPUSER, Messages.USER_NOT_FOUND);
@@ -44,7 +50,10 @@ namespace BevCapital.Logon.Application.UseCases.User
 
                 _unitOfWork.Users.Remove(appUser);
 
-                var success = await _unitOfWork.SaveAsync();
+                var @event = _mapper.Map<AppUser, AppUserDeletedEvent>(appUser);
+                @event.UserId = appUser.Id;
+
+                var success = await _unitOfWork.SaveChangesAndCommitAsync(@event);
                 if (success)
                 {
                     await _distributedCache.RemoveAsync(CacheKeys.LIST_ALL_USERS);

@@ -17,13 +17,13 @@ namespace BevCapital.Logon.Application.UseCases.Auth
 {
     public class Login
     {
-        public class Command : IRequest<UserTokenOut>
+        public class LoginCommand : IRequest<UserTokenOut>
         {
             public string Email { get; set; }
             public string Password { get; set; }
         }
 
-        public class CommandValidator : AbstractValidator<Command>
+        public class CommandValidator : AbstractValidator<LoginCommand>
         {
             public CommandValidator()
             {
@@ -32,7 +32,7 @@ namespace BevCapital.Logon.Application.UseCases.Auth
             }
         }
 
-        public class Handler : IRequestHandler<Command, UserTokenOut>
+        public class Handler : IRequestHandler<LoginCommand, UserTokenOut>
         {
             private readonly IUnitOfWork _unitOfWork;
             private readonly IAppNotificationHandler _appNotificationHandler;
@@ -50,9 +50,9 @@ namespace BevCapital.Logon.Application.UseCases.Auth
                 _passwordHasher = passwordHasher;
             }
 
-            public async Task<UserTokenOut> Handle(Command request, CancellationToken cancellationToken)
+            public async Task<UserTokenOut> Handle(LoginCommand request, CancellationToken cancellationToken)
             {
-                var appUser = await _unitOfWork.Users.GetByEmailAsync(request.Email);
+                var appUser = await _unitOfWork.Users.GetByEmailAsync(request.Email, cancellationToken);
                 if (appUser == null)
                 {
                     _appNotificationHandler.AddNotification(Keys.APPUSER, Messages.INVALID_EMAIL_PASSWORD);

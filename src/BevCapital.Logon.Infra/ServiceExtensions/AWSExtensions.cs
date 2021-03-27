@@ -1,5 +1,7 @@
-﻿using Amazon.XRay.Recorder.Core;
+﻿using Amazon.SimpleNotificationService;
+using Amazon.XRay.Recorder.Core;
 using Amazon.XRay.Recorder.Handlers.AwsSdk;
+using BevCapital.Logon.Infra.MessageBrokers.Aws;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -11,16 +13,20 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
 {
     public static class AWSExtensions
     {
-        public static IServiceCollection ConfigureAWS(this IServiceCollection services,
+        public static IServiceCollection AddAppAWS(this IServiceCollection services,
                                                            IConfiguration configuration,
                                                            IWebHostEnvironment environment)
         {
+            services.Configure<SNSSettings>(configuration.GetSection("SNSSettings"));
+
             if (!environment.IsEnvironment("Testing"))
             {
                 AWSXRayRecorder recorder = new AWSXRayRecorderBuilder().Build();
                 AWSXRayRecorder.InitializeInstance(configuration, recorder);
                 AWSSDKHandler.RegisterXRayForAllServices();
             }
+
+            services.AddAWSService<IAmazonSimpleNotificationService>();
 
             return services;
         }

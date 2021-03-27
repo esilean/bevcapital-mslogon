@@ -14,9 +14,9 @@ namespace BevCapital.Logon.Application.UseCases.User
 {
     public class List
     {
-        public class Query : IRequest<List<AppUserOut<Guid>>> { }
+        public class ListAppUserQuery : IRequest<List<AppUserOut<Guid>>> { }
 
-        public class Handler : IRequestHandler<Query, List<AppUserOut<Guid>>>
+        public class Handler : IRequestHandler<ListAppUserQuery, List<AppUserOut<Guid>>>
         {
 
             private readonly IUnitOfWork _unitOfWork;
@@ -30,12 +30,12 @@ namespace BevCapital.Logon.Application.UseCases.User
                 _distributedCache = distributedCache;
             }
 
-            public async Task<List<AppUserOut<Guid>>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<List<AppUserOut<Guid>>> Handle(ListAppUserQuery request, CancellationToken cancellationToken)
             {
                 var cachedAppUsers = await _distributedCache.GetAsync<List<AppUserOut<Guid>>>(CacheKeys.LIST_ALL_USERS);
                 if (cachedAppUsers == null || !cachedAppUsers.Any())
                 {
-                    var appUsers = await _unitOfWork.Users.GetAllAsync();
+                    var appUsers = await _unitOfWork.Users.GetAllAsync(cancellationToken);
                     cachedAppUsers = _mapper.Map<List<AppUserOut<Guid>>>(appUsers);
 
                     await _distributedCache.SetAsync<List<AppUserOut<Guid>>>

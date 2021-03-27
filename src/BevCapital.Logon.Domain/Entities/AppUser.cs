@@ -8,8 +8,8 @@ namespace BevCapital.Logon.Domain.Entities
         public string Name { get; private set; }
         public string Email { get; private set; }
         public string Password { get; private set; }
-        public DateTime CreatedAt { get; }
-        public DateTime UpdatedAt { get; private set; }
+        public DateTime CreatedAtUtc { get; }
+        public DateTime UpdatedAtUtc { get; private set; }
 
         protected AppUser() { }
 
@@ -18,23 +18,22 @@ namespace BevCapital.Logon.Domain.Entities
         /// </summary>
         /// <param name="name"></param>
         /// <param name="email"></param>
-        /// <param name="password"></param>
-        /// <param name="createdAt"></param>
-        /// <param name="updatedAt"></param>
-        private AppUser(string name, string email, DateTime createdAt, DateTime updatedAt)
+        /// <param name="createdAtUtc"></param>
+        /// <param name="updatedAtUtc"></param>
+        private AppUser(string name, string email, DateTime createdAtUtc, DateTime updatedAtUtc)
         {
             Id = Guid.NewGuid();
             Name = name;
             Email = email;
-            CreatedAt = createdAt;
-            UpdatedAt = updatedAt;
+            CreatedAtUtc = createdAtUtc;
+            UpdatedAtUtc = updatedAtUtc;
 
             Validate(this, new AppUserValidator());
         }
 
         public static AppUser Create(string name, string email)
         {
-            return new AppUser(name, email, DateTime.Now, DateTime.Now);
+            return new AppUser(name, email, DateTime.UtcNow, DateTime.UtcNow);
         }
 
         public void Update(string name, string email)

@@ -6,7 +6,7 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
 {
     public static class DistributedCacheExtensions
     {
-        public static IServiceCollection ConfigureDistributedCache(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddAppDistributedCache(this IServiceCollection services, IConfiguration configuration)
         {
             var cacheCNN = configuration.GetConnectionString("CacheCNN");
             if (string.IsNullOrWhiteSpace(cacheCNN))

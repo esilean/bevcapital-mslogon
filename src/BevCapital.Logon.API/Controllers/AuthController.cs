@@ -16,7 +16,7 @@ namespace BevCapital.Logon.API.Controllers
         /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost("signin")]
-        public async Task<ActionResult<UserTokenOut>> SignIn(Login.Command command)
+        public async Task<ActionResult<UserTokenOut>> SignIn(Login.LoginCommand command)
         {
             return await _mediator.Send(command);
         }

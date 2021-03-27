@@ -10,7 +10,7 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
 {
     public static class DatabaseExtensions
     {
-        public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddAppDatabase(this IServiceCollection services, IConfiguration configuration)
         {
             var connString = configuration.GetConnectionString("SqlCNN");
 

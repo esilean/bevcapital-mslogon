@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BevCapital.Logon.Domain.Core.Events;
+using System;
 using System.Threading.Tasks;
 
 namespace BevCapital.Logon.Domain.Repositories
@@ -7,6 +8,6 @@ namespace BevCapital.Logon.Domain.Repositories
     {
         IAppUserRepositoryAsync Users { get; }
 
-        Task<bool> SaveAsync();
+        Task<bool> SaveChangesAndCommitAsync(IEvent @event);
     }
 }
