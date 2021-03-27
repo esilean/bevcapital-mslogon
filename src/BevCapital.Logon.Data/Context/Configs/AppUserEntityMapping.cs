@@ -8,6 +8,7 @@ namespace BevCapital.Logon.Data.Context.Configs
     {
         public void Configure(EntityTypeBuilder<AppUser> builder)
         {
+            builder.ToTable("Logon_AppUsers");
             builder.HasKey(r => r.Id);
 
             builder.Property(e => e.Name)
@@ -23,11 +24,8 @@ namespace BevCapital.Logon.Data.Context.Configs
                 .IsRequired();
             builder.Property(e => e.UpdatedAt)
                 .IsRequired();
-
             builder.Property(e => e.RowVersion)
                 .IsRowVersion();
-
-
 
             builder.Ignore(e => e.Valid);
             builder.Ignore(e => e.Invalid);

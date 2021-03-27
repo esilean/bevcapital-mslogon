@@ -51,7 +51,7 @@ namespace BevCapital.Logon.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppUsers");
+                    b.ToTable("Logon_AppUsers");
                 });
 #pragma warning restore 612, 618
         }

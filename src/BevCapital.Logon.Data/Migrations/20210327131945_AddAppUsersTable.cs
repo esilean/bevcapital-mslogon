@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BevCapital.Logon.Data.Migrations
 {
-    public partial class AddUserTable : Migration
+    public partial class AddAppUsersTable : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "AppUsers",
+                name: "Logon_AppUsers",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -17,20 +17,20 @@ namespace BevCapital.Logon.Data.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     Email = table.Column<string>(maxLength: 100, nullable: false),
-                    Password = table.Column<string>(maxLength: 64, nullable: false),
+                    Password = table.Column<string>(maxLength: 100, nullable: false),
                     CreatedAt = table.Column<DateTime>(nullable: false),
                     UpdatedAt = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AppUsers", x => x.Id);
+                    table.PrimaryKey("PK_Logon_AppUsers", x => x.Id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AppUsers");
+                name: "Logon_AppUsers");
         }
     }
 }

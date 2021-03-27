@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BevCapital.Logon.Data.Migrations
 {
     [DbContext(typeof(AppUserContext))]
-    [Migration("20210320213958_AlterColumSize_Password")]
-    partial class AlterColumSize_Password
+    [Migration("20210327131945_AddAppUsersTable")]
+    partial class AddAppUsersTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -53,7 +53,7 @@ namespace BevCapital.Logon.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppUsers");
+                    b.ToTable("Logon_AppUsers");
                 });
 #pragma warning restore 612, 618
         }

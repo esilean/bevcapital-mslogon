@@ -126,5 +126,7 @@ namespace BevCapital.Logon.API
                 AWSXRayRecorder.Instance.EndSegment();
             }
         }
+
+
     }
 }
