@@ -3,14 +3,16 @@ using System;
 using BevCapital.Logon.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BevCapital.Logon.Data.Migrations.Outbox
 {
     [DbContext(typeof(OutboxContext))]
-    partial class OutboxContextModelSnapshot : ModelSnapshot
+    [Migration("20210328133947_ChangeOutboxTableName")]
+    partial class ChangeOutboxTableName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,7 +33,7 @@ namespace BevCapital.Logon.Data.Migrations.Outbox
                         .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime?>("ProcessedAtUtc")
+                    b.Property<DateTime?>("Processed")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Type")

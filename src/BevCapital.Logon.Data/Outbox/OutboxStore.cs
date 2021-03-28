@@ -46,7 +46,7 @@ namespace BevCapital.Logon.Data.Outbox
         public async Task<IEnumerable<Guid>> GetUnprocessedMessageIds()
         {
             var query = from message in _outboxContext.OutboxMessages
-                        where !message.Processed.HasValue
+                        where !message.ProcessedAtUtc.HasValue
                         select message.Id;
 
             var result = await query.ToListAsync();
@@ -58,11 +58,11 @@ namespace BevCapital.Logon.Data.Outbox
         {
             var message = new OutboxMessage(id)
             {
-                Processed = DateTime.UtcNow
+                ProcessedAtUtc = DateTime.UtcNow
             };
 
             _outboxContext.OutboxMessages.Attach(message);
-            _outboxContext.Entry(message).Property(p => p.Processed).IsModified = true;
+            _outboxContext.Entry(message).Property(p => p.ProcessedAtUtc).IsModified = true;
 
             await _outboxContext.SaveChangesAsync();
 

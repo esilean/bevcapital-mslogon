@@ -3,14 +3,16 @@ using System;
 using BevCapital.Logon.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BevCapital.Logon.Data.Migrations.Outbox
 {
     [DbContext(typeof(OutboxContext))]
-    partial class OutboxContextModelSnapshot : ModelSnapshot
+    [Migration("20210328140347_ChangeOutboxColumnNameProcessedUtc")]
+    partial class ChangeOutboxColumnNameProcessedUtc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -60,7 +60,7 @@ namespace BevCapital.Logon.Background.Services
                     foreach (var messageId in messageIds)
                     {
                         var message = await outboxStore.GetMessage(messageId);
-                        if (message is null || message.Processed.HasValue)
+                        if (message is null || message.ProcessedAtUtc.HasValue)
                         {
                             continue;
                         }

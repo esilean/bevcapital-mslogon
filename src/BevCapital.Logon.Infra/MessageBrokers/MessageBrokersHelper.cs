@@ -1,25 +1,13 @@
 ﻿using BevCapital.Logon.Domain.Core.Events;
-using System;
+using System.Linq;
 
 namespace BevCapital.Logon.Infra.MessageBrokers
 {
     public static class MessageBrokersHelper
     {
-        public static string GetTypeName(Type type)
+        public static string GetTypeName(IEvent @event)
         {
-            var name = type.FullName.ToLower().Replace("+", ".");
-
-            if (type is IEvent)
-            {
-                name += "_event";
-            }
-
-            return name;
-        }
-
-        public static string GetTypeName<T>()
-        {
-            return GetTypeName(typeof(T));
+            return @event.GetType().FullName.Split('.').Last().ToLower();
         }
     }
 }

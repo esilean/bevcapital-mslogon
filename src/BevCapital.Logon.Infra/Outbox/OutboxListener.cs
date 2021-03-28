@@ -26,11 +26,8 @@ namespace BevCapital.Logon.Infra.Outbox
         {
             var outboxMessage = new OutboxMessage
             {
-                Type = MessageBrokersHelper.GetTypeName(typeof(TEvent)),
-                Data = @event == null ? "{}" : JsonConvert.SerializeObject(@event, new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.All
-                })
+                Type = MessageBrokersHelper.GetTypeName(@event),
+                Data = @event == null ? "{}" : JsonConvert.SerializeObject(@event)
             };
 
             await Commit(outboxMessage);

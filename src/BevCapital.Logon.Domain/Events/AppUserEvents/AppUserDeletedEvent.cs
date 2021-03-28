@@ -4,7 +4,7 @@ using System;
 
 namespace BevCapital.Logon.Domain.Events.AppUserEvents
 {
-    public class AppUserDeletedEvent : Event
+    public class AppUserDeletedEvent : IEvent
     {
         public Guid UserId { get; set; }
 

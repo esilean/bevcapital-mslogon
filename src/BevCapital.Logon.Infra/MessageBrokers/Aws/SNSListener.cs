@@ -3,6 +3,7 @@ using Amazon.SimpleNotificationService.Model;
 using BevCapital.Logon.Application.Gateways.Events;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BevCapital.Logon.Infra.MessageBrokers.Aws
@@ -28,18 +29,33 @@ namespace BevCapital.Logon.Infra.MessageBrokers.Aws
                     MessageGroupId = messageId.ToString(),
                     MessageDeduplicationId = messageId.ToString(),
                     Message = message,
-                    TopicArn = _snsSettings.TopicArn
+                    TopicArn = _snsSettings.TopicArn,
+                    MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                    {
+                        { "x-token", CreateStringMessageAttr("whatever") }
+                    },
                 };
 
                 var response = await _amazonSimpleNotificationService.PublishAsync(request);
 
                 return response.HttpStatusCode == System.Net.HttpStatusCode.OK;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 //Publish to a DeadLetter?
                 return false;
             }
+        }
+
+        private MessageAttributeValue CreateStringMessageAttr(string value)
+        {
+            var messageAttrValue = new MessageAttributeValue
+            {
+                DataType = "String",
+                StringValue = value
+            };
+
+            return messageAttrValue;
         }
     }
 }

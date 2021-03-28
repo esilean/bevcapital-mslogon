@@ -37,7 +37,7 @@ namespace BevCapital.Logon.Data.Context
 
                 b.HasKey(k => k.Id);
 
-                b.ToTable("Outbox_OutboxMessages");
+                b.ToTable("Logon_OutboxMessages");
             });
         }
     }
