@@ -2,7 +2,6 @@
 using BevCapital.Logon.Domain.Core.Events;
 using BevCapital.Logon.Domain.Core.Outbox;
 using BevCapital.Logon.Domain.Outbox;
-using BevCapital.Logon.Infra.MessageBrokers;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 
@@ -26,8 +25,11 @@ namespace BevCapital.Logon.Infra.Outbox
         {
             var outboxMessage = new OutboxMessage
             {
-                Type = MessageBrokersHelper.GetTypeName(@event),
-                Data = @event == null ? "{}" : JsonConvert.SerializeObject(@event)
+                Type = EventTypeHelper.GetTypeName(@event.GetType()),
+                Data = @event == null ? "{}" : JsonConvert.SerializeObject(@event, new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.All
+                })
             };
 
             await Commit(outboxMessage);

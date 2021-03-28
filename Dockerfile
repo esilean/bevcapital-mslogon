@@ -9,8 +9,10 @@ WORKDIR /src
 COPY ["BevCapital.Logon.API/BevCapital.Logon.API.csproj", "BevCapital.Logon.API/"]
 COPY ["BevCapital.Logon.Application/BevCapital.Logon.Application.csproj", "BevCapital.Logon.Application/"]
 COPY ["BevCapital.Logon.Domain/BevCapital.Logon.Domain.csproj", "BevCapital.Logon.Domain/"]
+COPY ["BevCapital.Logon.Domain.Core/BevCapital.Logon.Domain.Core.csproj", "BevCapital.Logon.Domain.Core/"]
 COPY ["BevCapital.Logon.Data/BevCapital.Logon.Data.csproj", "BevCapital.Logon.Data/"]
 COPY ["BevCapital.Logon.Infra/BevCapital.Logon.Infra.csproj", "BevCapital.Logon.Infra/"]
+COPY ["BevCapital.Logon.Background/BevCapital.Logon.Background.csproj", "BevCapital.Logon.Background/"]
 
 
 RUN dotnet restore "BevCapital.Logon.API/BevCapital.Logon.API.csproj"

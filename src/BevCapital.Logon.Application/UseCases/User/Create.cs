@@ -9,6 +9,7 @@ using BevCapital.Logon.Domain.Repositories;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,16 +41,19 @@ namespace BevCapital.Logon.Application.UseCases.User
             private readonly IPasswordHasher<AppUser> _passwordHasher;
             private readonly IAppNotificationHandler _appNotificationHandler;
             private readonly IMapper _mapper;
+            private readonly IDistributedCache _distributedCache;
 
             public Handler(IUnitOfWork unitOfWork,
                            IPasswordHasher<AppUser> passwordHasher,
                            IAppNotificationHandler appNotificationHandler,
-                           IMapper mapper)
+                           IMapper mapper,
+                           IDistributedCache distributedCache)
             {
                 _unitOfWork = unitOfWork;
                 _passwordHasher = passwordHasher;
                 _appNotificationHandler = appNotificationHandler;
                 _mapper = mapper;
+                _distributedCache = distributedCache;
             }
 
             public async Task<Unit> Handle(CreateAppUserCommand request, CancellationToken cancellationToken)
@@ -76,7 +80,11 @@ namespace BevCapital.Logon.Application.UseCases.User
                 @event.UserId = appUser.Id;
 
                 var success = await _unitOfWork.SaveChangesAndCommitAsync(@event);
-                if (success) return Unit.Value;
+                if (success)
+                {
+                    await _distributedCache.RemoveAsync(CacheKeys.LIST_ALL_USERS);
+                    return Unit.Value;
+                }
 
                 throw new AppException(HttpStatusCode.InternalServerError);
             }

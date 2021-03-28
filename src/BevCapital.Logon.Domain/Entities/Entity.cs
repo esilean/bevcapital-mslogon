@@ -1,13 +1,15 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using System;
 
 namespace BevCapital.Logon.Domain.Entities
 {
-    public abstract class Entity<TId>
+    public abstract class Entity
     {
-        public TId Id { get; protected set; }
         public bool Valid { get; private set; }
         public bool Invalid => !Valid;
+        public DateTime CreatedAtUtc { get; private set; }
+        public DateTime UpdatedAtUtc { get; private set; }
         public ValidationResult ValidationResult { get; private set; }
 
         [System.ComponentModel.DataAnnotations.Timestamp]

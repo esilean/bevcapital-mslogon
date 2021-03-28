@@ -7,10 +7,6 @@ namespace BevCapital.Logon.Data.Context
     {
         public OutboxContext(DbContextOptions<OutboxContext> options) : base(options)
         {
-            if (!Database.CanConnect())
-            {
-                Database.EnsureCreated();
-            }
         }
 
         public DbSet<OutboxMessage> OutboxMessages { get; set; }

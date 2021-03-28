@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BevCapital.Logon.Domain.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BevCapital.Logon.Domain.Core", "src\BevCapital.Logon.Domain.Core\BevCapital.Logon.Domain.Core.csproj", "{0C51377B-A4E4-48F0-AD8A-54F925CEC209}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BevCapital.Logon.Background", "src\BevCapital.Logon.Infra.Background\BevCapital.Logon.Background.csproj", "{5D24035B-51C7-4E07-8113-F6020E37ECAA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BevCapital.Logon.Background", "src\BevCapital.Logon.Background\BevCapital.Logon.Background.csproj", "{5D24035B-51C7-4E07-8113-F6020E37ECAA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

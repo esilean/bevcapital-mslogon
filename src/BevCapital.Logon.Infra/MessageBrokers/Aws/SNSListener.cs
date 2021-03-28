@@ -40,7 +40,7 @@ namespace BevCapital.Logon.Infra.MessageBrokers.Aws
 
                 return response.HttpStatusCode == System.Net.HttpStatusCode.OK;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //Publish to a DeadLetter?
                 return false;

@@ -1,11 +1,8 @@
 using Amazon.XRay.Recorder.Core;
 using Amazon.XRay.Recorder.Core.Internal.Entities;
-using BevCapital.Logon.API.Filters;
 using BevCapital.Logon.API.Middlewares;
-using BevCapital.Logon.Application.UseCases.User;
 using BevCapital.Logon.Data.Context;
 using BevCapital.Logon.Infra.ServiceExtensions;
-using FluentValidation.AspNetCore;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -35,15 +32,6 @@ namespace BevCapital.Logon.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers(opts =>
-            {
-                opts.Filters.Add<NotificationFilter>();
-            })
-            .AddFluentValidation(cfg =>
-            {
-                cfg.RegisterValidatorsFromAssemblyContaining<Create>();
-            });
-
             services
                     .AddAppCore(Configuration)
                     .AddAppSwaggerLogon()

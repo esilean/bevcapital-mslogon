@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BevCapital.Logon.Data.Migrations.Outbox
 {
-    public partial class AddOutboxMessages : Migration
+    public partial class Outbox_AddInitialTables : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Outbox_OutboxMessages",
+                name: "Logon_OutboxMessages",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -17,18 +17,18 @@ namespace BevCapital.Logon.Data.Migrations.Outbox
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Type = table.Column<string>(nullable: false),
                     Data = table.Column<string>(nullable: false),
-                    Processed = table.Column<DateTime>(nullable: true)
+                    ProcessedAtUtc = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Outbox_OutboxMessages", x => x.Id);
+                    table.PrimaryKey("PK_Logon_OutboxMessages", x => x.Id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Outbox_OutboxMessages");
+                name: "Logon_OutboxMessages");
         }
     }
 }

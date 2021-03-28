@@ -13,9 +13,11 @@ phases:
       - echo Info about dbcontext
       - echo ASPNETCORE_ENVIRONMENT is $ASPNETCORE_ENVIRONMENT
       - echo ConnectionStrings__SqlCNN $ConnectionStrings__SqlCNN
-      - dotnet ef dbcontext info -p ./src/BevCapital.Logon.Data -s ./src/BevCapital.Logon.API
+      - dotnet ef dbcontext info -p ./src/BevCapital.Logon.Data -s ./src/BevCapital.Logon.API --context AppUserContext
+      - dotnet ef dbcontext info -p ./src/BevCapital.Logon.Data -s ./src/BevCapital.Logon.API --context OutboxContext
 
   build:
     commands:
       - echo Update database on `date`
-      - dotnet ef database update -p ./src/BevCapital.Logon.Data -s ./src/BevCapital.Logon.API
+      - dotnet ef database update -p ./src/BevCapital.Logon.Data -s ./src/BevCapital.Logon.API --context AppUserContext
+      - dotnet ef database update -p ./src/BevCapital.Logon.Data -s ./src/BevCapital.Logon.API --context OutboxContext

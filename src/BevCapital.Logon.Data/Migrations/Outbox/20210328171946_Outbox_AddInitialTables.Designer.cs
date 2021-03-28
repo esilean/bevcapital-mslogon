@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BevCapital.Logon.Data.Migrations.Outbox
 {
     [DbContext(typeof(OutboxContext))]
-    [Migration("20210327175759_AddOutboxMessages")]
-    partial class AddOutboxMessages
+    [Migration("20210328171946_Outbox_AddInitialTables")]
+    partial class Outbox_AddInitialTables
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -33,7 +33,7 @@ namespace BevCapital.Logon.Data.Migrations.Outbox
                         .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime?>("Processed")
+                    b.Property<DateTime?>("ProcessedAtUtc")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Type")
@@ -42,7 +42,7 @@ namespace BevCapital.Logon.Data.Migrations.Outbox
 
                     b.HasKey("Id");
 
-                    b.ToTable("Outbox_OutboxMessages");
+                    b.ToTable("Logon_OutboxMessages");
                 });
 #pragma warning restore 612, 618
         }
