@@ -71,7 +71,7 @@ Parameters:
 
   DeploymentStackName:
     Type: String
-    Default: MSLogonService
+    Default: MS-LogonService
     Description: >
       Name to give the production stack that is deployed as part of the pipeline
 
@@ -115,19 +115,19 @@ Resources:
   ECRServiceRepository:
     Type: AWS::ECR::Repository
     Properties:
-      ImageTagMutability: IMMUTABLE
+      ImageTagMutability: MUTABLE
       RepositoryName: !Sub ${RepositoryName}
 
   ECRNginxRepository:
     Type: AWS::ECR::Repository
     Properties:
-      ImageTagMutability: IMMUTABLE
+      ImageTagMutability: MUTABLE
       RepositoryName: !Sub ${RepositoryName}-nginx
 
   ECRXrayRepository:
     Type: AWS::ECR::Repository
     Properties:
-      ImageTagMutability: IMMUTABLE
+      ImageTagMutability: MUTABLE
       RepositoryName: !Sub ${RepositoryName}-xray
 
   Pipeline:

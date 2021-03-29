@@ -145,15 +145,15 @@ Resources:
             - name: AWS_XRAY_DAEMON_ADDRESS
               value: !Sub xray-daemon:${XRayContainerPort}
             - name: RDS_ENDPOINT
-              value: "rrs13q9t7evw8i.cde5ubcwv1jz.sa-east-1.rds.amazonaws.com"
+              value: "rrp91nlxbmcmuu.cde5ubcwv1jz.sa-east-1.rds.amazonaws.com"
             - name: RDS_PASSWORD
-              value: "[B&W#(FyIxvw2&iY"
+              value: "o,fT(%uQE'-|4t}t"
             - name: CACHE_ENDPOINT
               value: "redis-17626.c256.us-east-1-2.ec2.cloud.redislabs.com:17626"
             - name: CACHE_PASSWORD
               value: "bXmNJ3V86CpbcesWt8zo4DVEiQLZyTiA"
             - name: SNSSettings__TopicArn
-              value: "arn:aws:sns:sa-east-1:268919435141:tf-logon-userv.fifo"
+              value: "arn:aws:sns:sa-east-1:268919435141:tf-logon-userv2.fifo"
           LogConfiguration:
             LogDriver: "awslogs"
             Options:
