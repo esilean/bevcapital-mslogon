@@ -11,11 +11,30 @@ using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace BevCapital.Logon.Infra.ServiceExtensions
 {
     public static class CoreExtensions
     {
+        public static void AddSecrets(this IServiceCollection _, IConfiguration configuration)
+        {
+            var secretsJson = File.ReadAllText(@"appsecrets.json");
+            var secrets = JsonConvert.DeserializeObject<IDictionary<string, string>>(secretsJson);
+
+            foreach (var secret in secrets)
+            {
+                var values = secret.Value.Split("::");
+                foreach (var value in values)
+                {
+                    configuration[secret.Key] = configuration[secret.Key]?.Replace(value, Environment.GetEnvironmentVariable(value));
+                }
+            }
+        }
+
+
         public static IServiceCollection AddAppCore(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddControllers(opts =>

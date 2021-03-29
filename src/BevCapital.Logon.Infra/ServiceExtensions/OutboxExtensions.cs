@@ -14,16 +14,9 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
     {
         public static IServiceCollection AddAppOutbox(this IServiceCollection services, IConfiguration configuration)
         {
-            var connString = configuration.GetConnectionString("SqlCNN");
-
-            var rdsEndpoint = Environment.GetEnvironmentVariable("RDS_ENDPOINT");
-            var rdsPassword = Environment.GetEnvironmentVariable("RDS_PASSWORD");
-            connString = connString.Replace("RDS_ENDPOINT", rdsEndpoint)
-                                   .Replace("RDS_PASSWORD", rdsPassword);
-
             services.AddDbContext<OutboxContext>(opts =>
             {
-                opts.UseMySql(connString);
+                opts.UseMySql(configuration.GetConnectionString("SqlCNN"));
                 opts.AddXRayInterceptor(true);
             });
             services.AddScoped<OutboxContext>();

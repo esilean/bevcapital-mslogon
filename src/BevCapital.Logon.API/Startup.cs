@@ -32,6 +32,8 @@ namespace BevCapital.Logon.API
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSecrets(Configuration);
+
             services
                     .AddAppCore(Configuration)
                     .AddAppSwaggerLogon()
