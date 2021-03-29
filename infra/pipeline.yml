@@ -71,7 +71,7 @@ Parameters:
 
   DeploymentStackName:
     Type: String
-    Default: MS-LogonService
+    Default: MSLogonService
     Description: >
       Name to give the production stack that is deployed as part of the pipeline
 
