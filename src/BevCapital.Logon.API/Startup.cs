@@ -40,6 +40,7 @@ namespace BevCapital.Logon.API
                     .AddAppAWS(Configuration, HostingEnvironment)
                     .AddAppDatabase(Configuration)
                     .AddAppOutbox(Configuration)
+                    .AddAppOutboxService(Configuration)
                     .AddAppMessageBrokers()
                     .AddAppHealthCheck(Configuration);
         }
@@ -51,6 +52,7 @@ namespace BevCapital.Logon.API
                               ILogger<Startup> logger)
         {
             Log.Information($"Hosting enviroment = {env.EnvironmentName}");
+            Log.Information($"RDS_ENDPOINT = {Environment.GetEnvironmentVariable("RDS_ENDPOINT")}");
 
             app.UseMiddleware<ErrorHandlerMiddleware>();
             if (env.IsDevelopment())

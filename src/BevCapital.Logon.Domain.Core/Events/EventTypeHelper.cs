@@ -1,5 +1,6 @@
 ﻿using BevCapital.Logon.Domain.Core.Events;
 using System;
+using System.Linq;
 
 namespace BevCapital.Logon
 {
@@ -7,12 +8,7 @@ namespace BevCapital.Logon
     {
         public static string GetTypeName(Type type)
         {
-            var name = type.FullName.ToLower().Replace("+", ".");
-
-            if (type is IEvent)
-            {
-                name += "_event";
-            }
+            var name = type.FullName.ToLower().Replace("+", ".").Split('.').Last();
 
             return name;
         }

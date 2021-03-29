@@ -3,16 +3,18 @@ using BevCapital.Logon.Application.Gateways.Events;
 using BevCapital.Logon.Domain.Outbox;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BevCapital.Logon.Background.Services
+namespace BevCapital.Logon.Background.Outbox
 {
     public sealed class OutboxProcessorBackgroundService : BackgroundService
     {
+        private readonly ILogger<OutboxProcessorBackgroundService> _logger;
         private readonly OutboxSettings _outboxSettings;
         private readonly IEventListener _eventListener;
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -20,8 +22,10 @@ namespace BevCapital.Logon.Background.Services
 
         public OutboxProcessorBackgroundService(IServiceScopeFactory serviceScopeFactory,
                                                 IEventListener eventListener,
-                                                IOptions<OutboxSettings> options)
+                                                IOptions<OutboxSettings> options,
+                                                ILogger<OutboxProcessorBackgroundService> logger)
         {
+            _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
             _eventListener = eventListener;
             _outboxSettings = options.Value;
@@ -29,13 +33,15 @@ namespace BevCapital.Logon.Background.Services
 
         public override Task StopAsync(CancellationToken cancellationToken)
         {
+            _logger.LogInformation($"Stopping OutboxProcessorBackgroundService...");
             _timer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _timer = new Timer(SendOutboxMessages, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
+            _logger.LogInformation($"Starting OutboxProcessorBackgroundService...");
+            _timer = new Timer(SendOutboxMessages, null, TimeSpan.FromSeconds(40), TimeSpan.FromSeconds(_outboxSettings.TimerInternalInSeconds));
             return Task.CompletedTask;
         }
 
@@ -65,7 +71,7 @@ namespace BevCapital.Logon.Background.Services
                             continue;
                         }
 
-                        var success = await _eventListener.Publish(message.Id, message.Data);
+                        var success = await _eventListener.Publish(message);
                         if (success)
                         {
                             await outboxStore.SetMessageToProcessed(message.Id);
@@ -75,6 +81,7 @@ namespace BevCapital.Logon.Background.Services
                 }
                 catch (Exception e)
                 {
+                    _logger.LogError(e, e.Message);
                     AWSXRayRecorder.Instance.AddException(e);
                 }
                 finally

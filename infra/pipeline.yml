@@ -75,6 +75,14 @@ Parameters:
     Description: >
       Name to give the production stack that is deployed as part of the pipeline
 
+  RepositoryName:
+    Description: The repository name of the service
+    Type: String
+    MinLength: "2"
+    MaxLength: "256"
+    Default: bevcapital-mslogon
+    AllowedPattern: "(?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)*[a-z0-9]+(?:[._-][a-z0-9]+)*"
+
   GitHubPersonalAccessToken:
     Type: String
     Default: ""
@@ -104,7 +112,29 @@ Conditions:
     !Equals [!Sub "${PassGitHubPersonalAccessTokenToCodeBuild}", "true"]
 
 Resources:
+  ECRServiceRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageTagMutability: IMMUTABLE
+      RepositoryName: !Sub ${RepositoryName}
+
+  ECRNginxRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageTagMutability: IMMUTABLE
+      RepositoryName: !Sub ${RepositoryName}-nginx
+
+  ECRXrayRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageTagMutability: IMMUTABLE
+      RepositoryName: !Sub ${RepositoryName}-xray
+
   Pipeline:
+    DependsOn:
+      - ECRServiceRepository
+      - ECRNginxRepository
+      - ECRXrayRepository
     Type: "AWS::CodePipeline::Pipeline"
     Properties:
       RoleArn: !GetAtt PipelineRole.Arn

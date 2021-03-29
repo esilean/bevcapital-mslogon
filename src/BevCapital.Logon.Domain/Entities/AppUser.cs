@@ -31,10 +31,9 @@ namespace BevCapital.Logon.Domain.Entities
             return new AppUser(name, email);
         }
 
-        public void Update(string name, string email)
+        public void Update(string name)
         {
             Name = name;
-            Email = email;
         }
 
         public void UpdatePassword(string password)

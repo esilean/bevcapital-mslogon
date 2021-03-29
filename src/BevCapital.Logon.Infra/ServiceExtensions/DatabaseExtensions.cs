@@ -1,10 +1,10 @@
-﻿using System;
-using BevCapital.Logon.Data.Context;
+﻿using BevCapital.Logon.Data.Context;
 using BevCapital.Logon.Data.Repositories;
 using BevCapital.Logon.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace BevCapital.Logon.Infra.ServiceExtensions
 {
@@ -16,8 +16,8 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
 
             var rdsEndpoint = Environment.GetEnvironmentVariable("RDS_ENDPOINT");
             var rdsPassword = Environment.GetEnvironmentVariable("RDS_PASSWORD");
-            connString.Replace("RDS_ENDPOINT", rdsEndpoint);
-            connString.Replace("RDS_PASSWORD", rdsPassword);
+            connString = connString.Replace("RDS_ENDPOINT", rdsEndpoint)
+                                   .Replace("RDS_PASSWORD", rdsPassword);
 
             services.AddDbContext<AppUserContext>(opts =>
             {

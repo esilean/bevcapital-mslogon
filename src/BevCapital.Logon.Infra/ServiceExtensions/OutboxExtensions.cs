@@ -1,5 +1,4 @@
 ﻿using BevCapital.Logon.Application.Gateways.Outbox;
-using BevCapital.Logon.Background.Services;
 using BevCapital.Logon.Data.Context;
 using BevCapital.Logon.Data.Outbox;
 using BevCapital.Logon.Domain.Outbox;
@@ -15,13 +14,12 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
     {
         public static IServiceCollection AddAppOutbox(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<OutboxSettings>(configuration.GetSection("OutboxSettings"));
-
             var connString = configuration.GetConnectionString("SqlCNN");
+
             var rdsEndpoint = Environment.GetEnvironmentVariable("RDS_ENDPOINT");
             var rdsPassword = Environment.GetEnvironmentVariable("RDS_PASSWORD");
-            connString.Replace("RDS_ENDPOINT", rdsEndpoint);
-            connString.Replace("RDS_PASSWORD", rdsPassword);
+            connString = connString.Replace("RDS_ENDPOINT", rdsEndpoint)
+                                   .Replace("RDS_PASSWORD", rdsPassword);
 
             services.AddDbContext<OutboxContext>(opts =>
             {
@@ -32,8 +30,6 @@ namespace BevCapital.Logon.Infra.ServiceExtensions
 
             services.AddScoped<IOutboxStore, OutboxStore>();
             services.AddScoped<IOutboxListener, OutboxListener>();
-
-            services.AddHostedService<OutboxProcessorBackgroundService>();
 
             return services;
         }

@@ -13,6 +13,7 @@ namespace BevCapital.Logon.Application.UseCases.User.Mappers
             CreateMap<AppUser, AppUserOut<Guid>>();
 
             CreateMap<AppUser, AppUserCreatedEvent>();
+            CreateMap<AppUser, AppUserUpdatedEvent>();
             CreateMap<AppUser, AppUserDeletedEvent>();
         }
     }

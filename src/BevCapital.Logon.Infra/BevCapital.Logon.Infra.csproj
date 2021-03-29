@@ -36,7 +36,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BevCapital.Logon.Data\BevCapital.Logon.Data.csproj" />
-    <ProjectReference Include="..\BevCapital.Logon.Background\BevCapital.Logon.Background.csproj" />
   </ItemGroup>
 
 </Project>

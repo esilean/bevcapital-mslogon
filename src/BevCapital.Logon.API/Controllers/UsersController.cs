@@ -52,6 +52,20 @@ namespace BevCapital.Logon.API.Controllers
         /// 
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="command"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPut("update/{id}")]
+        public async Task<ActionResult<Unit>> Update(Guid id, Update.UpdateAppUserCommand command, CancellationToken cancellationToken)
+        {
+            command.Id = id;
+            return await _mediator.Send(command, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
