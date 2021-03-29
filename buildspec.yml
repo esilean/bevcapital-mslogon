@@ -34,7 +34,7 @@ phases:
       # Nginx Daemon Image
       - docker build -t ${REPO_LOGON_NGINX_NAME} -f ./nginx/Dockerfile ./nginx
       - docker tag ${REPO_LOGON_NGINX_NAME} ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}:$IMAGE_TAG
-      - docker tag ${REPO_LOGON_NGINX_NAME} ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}}:latest
+      - docker tag ${REPO_LOGON_NGINX_NAME} ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}:latest
 
       # X-Ray Daemon Image
       - docker build -t ${REPO_LOGON_XRAY_NAME} -f ./xray/Dockerfile ./xray
