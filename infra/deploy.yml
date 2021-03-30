@@ -163,7 +163,7 @@ Resources:
                   "",
                   [
                     "{{resolve:secretsmanager:",
-                    "RedisSecret-2342ffds2",
+                    "CacheSecretBevCapital",
                     ":SecretString:cacheEndpoint}}",
                   ],
                 ]
@@ -173,7 +173,7 @@ Resources:
                   "",
                   [
                     "{{resolve:secretsmanager:",
-                    "RedisSecret-2342ffds2",
+                    "CacheSecretBevCapital",
                     ":SecretString:cachePassword}}",
                   ],
                 ]

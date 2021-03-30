@@ -56,9 +56,9 @@ phases:
 
       # Generate json with service images endpoint
       - printf '{' >> serviceimages.json
-      - printf ' "ServiceImageUrl":"%s", ' ${ECR_REPO}/${REPO_LOGON_NAME}:latest >> serviceimages.json
-      - printf ' "NginxImageUrl":"%s", ' ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}:latest >> serviceimages.json
-      - printf ' "XRayImageUrl":"%s" ' ${ECR_REPO}/${REPO_LOGON_XRAY_NAME}:latest >> serviceimages.json
+      - printf ' "ServiceImageUrl":"%s", ' ${ECR_REPO}/${REPO_LOGON_NAME}:$IMAGE_TAG >> serviceimages.json
+      - printf ' "NginxImageUrl":"%s", ' ${ECR_REPO}/${REPO_LOGON_NGINX_NAME}:$IMAGE_TAG >> serviceimages.json
+      - printf ' "XRayImageUrl":"%s" ' ${ECR_REPO}/${REPO_LOGON_XRAY_NAME}:$IMAGE_TAG >> serviceimages.json
       - printf '}' >> serviceimages.json
 artifacts:
   files:
