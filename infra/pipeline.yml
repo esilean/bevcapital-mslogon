@@ -226,6 +226,7 @@ Resources:
   PipelineArtifactsBucket:
     Type: AWS::S3::Bucket
     Properties:
+      BucketName: !Sub ${RepositoryName}-pipeline
       AccessControl: LogDeliveryWrite
       # BucketEncryption:
       #   ServerSideEncryptionConfiguration:
@@ -543,6 +544,7 @@ Resources:
               - ecs:DeleteService
               - ecr:GetAuthorizationToken
               - ecr:DescribeImages
+              - ecr:DeleteRepository
               - logs:CreateLogGroup
               - logs:CreateLogStream
               - logs:PutLogEvents

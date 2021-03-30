@@ -145,15 +145,32 @@ Resources:
             - name: AWS_XRAY_DAEMON_ADDRESS
               value: !Sub xray-daemon:${XRayContainerPort}
             - name: RDS_ENDPOINT
-              value: "rrp91nlxbmcmuu.cde5ubcwv1jz.sa-east-1.rds.amazonaws.com"
+              value: !ImportValue
+                "Fn::Sub": "RDSBevCapital-Endpoint"
             - name: RDS_PASSWORD
-              value: "o,fT(%uQE'-|4t}t"
+              value:
+                {
+                  {
+                    resolve:secretsmanager:RDSSecretBevCapital:SecretString:password,
+                  },
+                }
             - name: CACHE_ENDPOINT
-              value: "redis-17626.c256.us-east-1-2.ec2.cloud.redislabs.com:17626"
+              value:
+                {
+                  {
+                    resolve:secretsmanager:RedisSecret-2342ffds2:SecretString:cacheEndpoint,
+                  },
+                }
             - name: CACHE_PASSWORD
-              value: "bXmNJ3V86CpbcesWt8zo4DVEiQLZyTiA"
+              value:
+                {
+                  {
+                    resolve:secretsmanager:RedisSecret-2342ffds2:SecretString:cachePassword,
+                  },
+                }
             - name: SNSSettings__TopicArn
-              value: "arn:aws:sns:sa-east-1:268919435141:tf-logon-userv2.fifo"
+              value: !ImportValue
+                "Fn::Sub": "SNSTopicARNBevCapital"
           LogConfiguration:
             LogDriver: "awslogs"
             Options:
