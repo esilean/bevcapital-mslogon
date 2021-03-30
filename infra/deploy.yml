@@ -149,25 +149,34 @@ Resources:
                 "Fn::Sub": "RDSBevCapital-Endpoint"
             - name: RDS_PASSWORD
               value:
-                {
-                  {
-                    resolve:secretsmanager:RDSSecretBevCapital:SecretString:password,
-                  },
-                }
+                !Join [
+                  "",
+                  [
+                    "{{resolve:secretsmanager:",
+                    "RDSSecretBevCapital",
+                    ":SecretString:password}}",
+                  ],
+                ]
             - name: CACHE_ENDPOINT
               value:
-                {
-                  {
-                    resolve:secretsmanager:RedisSecret-2342ffds2:SecretString:cacheEndpoint,
-                  },
-                }
+                !Join [
+                  "",
+                  [
+                    "{{resolve:secretsmanager:",
+                    "RedisSecret-2342ffds2",
+                    ":SecretString:cacheEndpoint}}",
+                  ],
+                ]
             - name: CACHE_PASSWORD
               value:
-                {
-                  {
-                    resolve:secretsmanager:RedisSecret-2342ffds2:SecretString:cachePassword,
-                  },
-                }
+                !Join [
+                  "",
+                  [
+                    "{{resolve:secretsmanager:",
+                    "RedisSecret-2342ffds2",
+                    ":SecretString:cachePassword}}",
+                  ],
+                ]
             - name: SNSSettings__TopicArn
               value: !ImportValue
                 "Fn::Sub": "SNSTopicARNBevCapital"
