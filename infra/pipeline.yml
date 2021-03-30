@@ -557,6 +557,10 @@ Resources:
               - cloudwatch:GetMetricData
               - cloudwatch:PutMetricAlarm
               - cloudwatch:PutMetricData
+              - secretsmanager:GetSecretValue
+              - secretsmanager:DescribeSecret
+              - kms:Decrypt
+              - kms:GenerateDataKey
             Resource: "*"
 
   # IAM Policy that grants permissions required for Taskcat execution.
