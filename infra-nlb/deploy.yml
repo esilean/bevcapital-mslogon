@@ -217,7 +217,7 @@ Resources:
       TargetType: instance
       HealthCheckIntervalSeconds: 10
       HealthCheckPath: "/ms-logon/health/live"
-      HealthCheckPort: !Ref ListenerPort
+      #HealthCheckPort: !Ref ListenerPort
       HealthCheckProtocol: HTTP
       HealthyThresholdCount: 2
       UnhealthyThresholdCount: 2
