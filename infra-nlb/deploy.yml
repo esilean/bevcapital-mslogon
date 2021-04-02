@@ -206,7 +206,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Name: !Sub ${ServiceName}-nginx
-      Port: 80
+      Port: 8080
       Protocol: TCP
       VpcId: !Ref "VPC"
 
