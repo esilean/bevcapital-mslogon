@@ -22,12 +22,10 @@ Parameters:
 
   ServiceImageUrl:
     Type: String
-    Default: ""
     Description: The url of a docker image that contains the application
 
   NLB:
     Type: String
-    Default: ""
     Description: A Network Load balancer
 
   ListenerPort:
@@ -37,23 +35,15 @@ Parameters:
 
   NginxImageUrl:
     Type: String
-    Default: ""
     Description: The url of a docker image that contains the nginx
 
   XRayImageUrl:
     Type: String
-    Default: ""
     Description: The url of a docker image that contains the xray-daemon
 
   ECSServiceAutoScalingRoleARN:
     Type: String
-    Default: ""
     Description: The ECS service auto scaling role ARN
-
-  NginxContainerPort:
-    Type: Number
-    Default: 80
-    Description: What port number the nginx application inside the docker container is binding to
 
   XRayContainerPort:
     Type: Number
@@ -184,9 +174,6 @@ Resources:
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: !Sub ${EnvironmentName}-${ServiceName}-xray
 
-  # The service. The service is a resource which allows you to run multiple
-  # copies of a type of task, and gather up their logs and metrics, as well
-  # as monitor the number of running tasks and replace any that have crashed
   Service:
     Type: AWS::ECS::Service
     Properties:
@@ -202,11 +189,6 @@ Resources:
           ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup
 
-  # A target group. This is used for keeping track of all the tasks, and
-  # what IP addresses / port numbers they have. You can query it yourself,
-  # to use the addresses yourself, but most often this target group is just
-  # connected to an application load balancer, or network load balancer, so
-  # it can automatically distribute traffic across all the targets.
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -217,7 +199,6 @@ Resources:
       TargetType: instance
       HealthCheckIntervalSeconds: 10
       HealthCheckPath: "/ms-logon/health/live"
-      #HealthCheckPort: !Ref ListenerPort
       HealthCheckProtocol: HTTP
       HealthyThresholdCount: 2
       UnhealthyThresholdCount: 2
