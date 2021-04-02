@@ -47,7 +47,7 @@ Parameters:
 
   NginxContainerPort:
     Type: Number
-    Default: 81
+    Default: 80
     Description: What port number the nginx application inside the docker container is binding to
 
   XRayContainerPort:
@@ -98,7 +98,7 @@ Resources:
           Essential: true
           Image: !Ref "NginxImageUrl"
           PortMappings:
-            - ContainerPort: !Ref NginxContainerPort 
+            - ContainerPort: 80
               HostPort: 0
               Protocol: TCP
           Links:
@@ -194,7 +194,7 @@ Resources:
       TaskDefinition: !Ref "TaskDefinition"
       LoadBalancers:
         - ContainerName: !Sub ${ServiceName}-nginx
-          ContainerPort: !Ref NginxContainerPort
+          ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup
 
   # A target group. This is used for keeping track of all the tasks, and
@@ -206,7 +206,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Name: !Sub ${ServiceName}-nginx
-      Port: !Ref NginxContainerPort
+      Port: 80
       Protocol: TCP
       VpcId: !Ref "VPC"
 
@@ -215,7 +215,7 @@ Resources:
     # Condition: HasLoadBalancerCertificateArn
     Properties:
       LoadBalancerArn: !Ref NLB
-      Port: !Ref NginxContainerPort
+      Port: 8080
       Protocol: TCP
       DefaultActions:
         - Type: forward
