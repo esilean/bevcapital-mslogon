@@ -30,6 +30,11 @@ Parameters:
     Default: ""
     Description: A Network Load balancer
 
+  ListenerPort:
+    Type: Number
+    Default: 8080
+    Description: Listener Port
+
   NginxImageUrl:
     Type: String
     Default: ""
@@ -206,27 +211,29 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Name: !Sub ${ServiceName}-nginx
-      Port: 8080
-      Protocol: TCP
       VpcId: !Ref "VPC"
+      Port: !Ref ListenerPort
+      Protocol: TCP
+      TargetType: instance
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: "/ms-logon/health/live"
+      HealthCheckPort: !Ref ListenerPort
+      HealthCheckProtocol: HTTP
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: 60
 
-  TCPListener:
+  Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    # Condition: HasLoadBalancerCertificateArn
     Properties:
       LoadBalancerArn: !Ref NLB
-      Port: 8080
+      Port: !Ref ListenerPort
       Protocol: TCP
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref TargetGroup
-
-  # NLBListenerCert:
-  #   Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
-  #   Properties:
-  #     Certificates:
-  #       - CertificateArn: !Ref LoadBalancerCertificateArn
-  #     ListenerArn: !Ref TCPListener
 
   # Enable autoscaling for this service
   ScalableTarget:
