@@ -1,0 +1,589 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates a pipeline and deploys a service into an ECS cluster behind a load balancer and nginx.
+Parameters:
+  AccoundId:
+    Type: String
+    Default: ""
+    Description: The AWS Account Id
+
+  EnvironmentName:
+    Type: String
+    Default: development
+    Description: The name of the environment to add this service to
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: The VPC that the ECS cluster is deployed to
+
+  Cluster:
+    Type: String
+    Default: development
+    Description: Please provide the ECS Cluster ID that this service should run on
+
+  NLB:
+    Type: String
+    Default: ""
+    Description: A Network Load balancer
+
+  ECSServiceAutoScalingRoleARN:
+    Type: String
+    Default: ""
+    Description: The ECS service auto scaling role ARN
+
+  DesiredCount:
+    Type: Number
+    Default: 1
+    Description: How many copies of the service task to run
+
+  GitHubRepositoryOwner:
+    Type: String
+    Default: esilean
+    Description: >
+      Owner of the GitHub Repository containing the CloudFormation template being deployed. Usually
+      your GitHub username
+
+  GitHubRepositoryName:
+    Type: String
+    Default: bevcapital-mslogon
+    Description: >
+      Name of the GitHub repository containing the CloudFormation template being deployed. For this
+      example, most likely would be "aws-cloudformation-pipeline-example" but might be different if
+      you changed the name of the forked repository
+
+  GitHubIntegrationBranch:
+    Type: String
+    Default: main
+    Description: >
+      Git branch on which integration occurs. Typical value here would be "master" but might differ
+      for your specific use case
+
+  DeploymentStackName:
+    Type: String
+    Default: MSLogonService
+    Description: >
+      Name to give the production stack that is deployed as part of the pipeline
+
+  RepositoryName:
+    Description: The repository name of the service
+    Type: String
+    MinLength: "2"
+    MaxLength: "256"
+    Default: bevcapital-mslogon
+    AllowedPattern: "(?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)*[a-z0-9]+(?:[._-][a-z0-9]+)*"
+
+  GitHubPersonalAccessToken:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: >
+      Personal Access Token from GitHub that is used by CodePipeline to clone the source from the
+      repository and configure webhooks. This personal access token requires the "repo" and
+      "admin:repo_hook" scopes in order to function correctly. It is strongly recommended that this
+      value be provided using Secrets Manager. In order to pass value from Secrets Manager, set this
+      parameter value to "{{resolve:secretsmanager:your-secret-id:SecretString}}". More information
+      see: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/dynamic-references.html
+
+  PassGitHubPersonalAccessTokenToCodeBuild:
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+    Description: >
+      Determines whether or not your personal access token is passed to CodeBuild. Set this value to
+      "true" if this is the first time using CodeBuild with GitHub, as CodeBuild only supports one
+      personal access token per account, per region. If you have already configured other CodeBuild
+      projects to integrate with GitHub previously, set this value to "false".
+
+Conditions:
+  CreateCodeBuildCredentials:
+    !Equals [!Sub "${PassGitHubPersonalAccessTokenToCodeBuild}", "true"]
+
+Resources:
+  ECRServiceRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageTagMutability: MUTABLE
+      RepositoryName: !Sub ${RepositoryName}
+
+  ECRNginxRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageTagMutability: MUTABLE
+      RepositoryName: !Sub ${RepositoryName}-nginx
+
+  ECRXrayRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageTagMutability: MUTABLE
+      RepositoryName: !Sub ${RepositoryName}-xray
+
+  Pipeline:
+    DependsOn:
+      - ECRServiceRepository
+      - ECRNginxRepository
+      - ECRXrayRepository
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      RoleArn: !GetAtt PipelineRole.Arn
+      ArtifactStore:
+        Location: !Ref PipelineArtifactsBucket
+        Type: S3
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              RunOrder: 1
+              InputArtifacts: []
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration:
+                Owner: !Sub ${GitHubRepositoryOwner}
+                Repo: !Sub ${GitHubRepositoryName}
+                Branch: !Sub ${GitHubIntegrationBranch}
+                OAuthToken: !Sub ${GitHubPersonalAccessToken}
+                PollForSourceChanges: false
+              OutputArtifacts:
+                - Name: SourceArtifact
+        - Name: Build
+          Actions:
+            # - Name: ValidateTemplate
+            #   RunOrder: 1
+            #   InputArtifacts:
+            #     - Name: SourceArtifact
+            #   ActionTypeId:
+            #     Category: Test
+            #     Owner: AWS
+            #     Version: 1
+            #     Provider: CodeBuild
+            #   Configuration:
+            #     ProjectName: !Ref CodeBuildIntegrationProject
+            - Name: GetECRImages
+              RunOrder: 2
+              InputArtifacts:
+                - Name: SourceArtifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildGenerateImagesProject
+              OutputArtifacts:
+                - Name: BuildArtifact
+
+        - Name: Deploy
+          Actions:
+            - Name: DeployAction
+              RunOrder: 1
+              InputArtifacts:
+                - Name: SourceArtifact
+                - Name: BuildArtifact
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !Sub ${CloudFormationStackRole.Arn}
+                StackName: !Sub ${DeploymentStackName}
+                TemplatePath: SourceArtifact::infra-nlb/deploy.yml
+                ParameterOverrides: !Sub |
+                  {
+                    "EnvironmentName" : "${EnvironmentName}",
+                    "VPC":  "${VPC}",
+                    "Cluster": "${Cluster}",
+                    "NLB": "${NLB}",
+                    "ServiceImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "ServiceImageUrl"] },
+                    "NginxImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "NginxImageUrl"] },
+                    "XRayImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "XRayImageUrl"] },
+                    "ECSServiceAutoScalingRoleARN": "${ECSServiceAutoScalingRoleARN}",
+                    "DesiredCount": "${DesiredCount}"
+                  }
+
+  # S3 Bucket to hold artifacts for the Pipeline. Only requirement is that the S3 bucket has
+  # versioning enabled. Other settings are following best practices for S3 buckets (encryption,
+  # access logging, blocking public access)
+  PipelineArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${RepositoryName}-pipeline
+      AccessControl: LogDeliveryWrite
+      # BucketEncryption:
+      #   ServerSideEncryptionConfiguration:
+      #     - ServerSideEncryptionByDefault:
+      #         SSEAlgorithm: aws:kms
+      #         KMSMasterKeyID: alias/aws/s3
+      LoggingConfiguration: {}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
+  # Configures a webhook at GitHub to trigger the CodePipeline whenever a commit is pushed to the
+  # integration branch configured for the stack
+  PipelineWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Name: !Sub ${GitHubRepositoryName}-pipeline-webhook
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Sub ${GitHubPersonalAccessToken}
+      RegisterWithThirdParty: true
+      Filters:
+        - JsonPath: $.ref
+          MatchEquals: refs/heads/{Branch}
+      TargetPipeline: !Sub ${Pipeline}
+      TargetAction: Source
+      TargetPipelineVersion: !Sub ${Pipeline.Version}
+
+  CodeBuildGenerateImagesProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${GitHubRepositoryName}-generateimages
+      ServiceRole: !Sub ${CodeBuildRole.Arn}
+      TimeoutInMinutes: 15
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        ImagePullCredentialsType: CODEBUILD
+        ComputeType: BUILD_GENERAL1_SMALL
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: ACCOUNT_ID
+            Value: !Sub ${AccoundId}
+          - Name: ASPNETCORE_ENVIRONMENT
+            Value: Production
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yml
+
+  # CodeBuild project that is run by the Pipeline during the Test Stage. Execution is controlled by
+  # the buildspec.yml file in the root of the repository
+  CodeBuildIntegrationProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${GitHubRepositoryName}-integration
+      ServiceRole: !Sub ${CodeBuildRole.Arn}
+      TimeoutInMinutes: 5
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+        ImagePullCredentialsType: CODEBUILD
+        ComputeType: BUILD_GENERAL1_SMALL
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub |
+          version: 0.2
+          phases:
+            pre_build:
+              commands:
+                - echo commands
+            build:
+              commands:
+                - echo Build started on `date`
+                - aws cloudformation validate-template --template-body file://infra-nlb/deploy.yml
+
+  # CodeBuild project that is run any time a PR is created, updated, or reopened for the target
+  # repository. The project will only run if the target branch of the PR is the same as the
+  # integration branch
+  CodeBuildPRProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${GitHubRepositoryName}-pull-requests
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Cache:
+        Type: LOCAL
+        Modes:
+          - LOCAL_SOURCE_CACHE
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+        ImagePullCredentialsType: CODEBUILD
+        ComputeType: BUILD_GENERAL1_SMALL
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+      ServiceRole: !Sub ${CodeBuildRole.Arn}
+      Source:
+        GitCloneDepth: 1
+        Location: !Sub "https://github.com/${GitHubRepositoryOwner}/${GitHubRepositoryName}.git"
+        ReportBuildStatus: true
+        Type: GITHUB
+      Triggers:
+        Webhook: true
+        # This Filter group ensures builds only run when a PR is created, updated, or reopened and the
+        # target branch of the PR is the integration branch
+        FilterGroups:
+          - - Type: EVENT
+              Pattern: PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED, PULL_REQUEST_REOPENED
+              ExcludeMatchedPattern: false
+            - Type: BASE_REF
+              Pattern: !Sub ^refs/heads/${GitHubIntegrationBranch}$
+              ExcludeMatchedPattern: false
+
+  # This grants the CodeBuild service the ability to clone a repository as well as setup a webhook
+  # NOTE: Only one of these tokens can be created per "ServerType" per region. If you plan on setting
+  # up multiple pipelines within the same account and region, you may need to pull this particlar resource
+  # into a different template
+  CodeBuildCredentials:
+    Condition: CreateCodeBuildCredentials
+    Type: AWS::CodeBuild::SourceCredential
+    Properties:
+      Token: !Sub ${GitHubPersonalAccessToken}
+      ServerType: GITHUB
+      AuthType: PERSONAL_ACCESS_TOKEN
+
+  # IAM Role assumed by CodePipeline during pipeline executions. Gives permission to manage artifacts,
+  # Call CodeBuild project and monitor status, and create and update CloudFormation stacks as part
+  # of the deployment
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodePipelineAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: GetAndPutArtifacts
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub ${PipelineArtifactsBucket.Arn}/*
+              - Sid: ManageCodeBuildJob
+                Effect: Allow
+                Action:
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StartBuild
+                Resource:
+                  - !Sub ${CodeBuildIntegrationProject.Arn}
+                  - !Sub ${CodeBuildGenerateImagesProject.Arn}
+              - Sid: CreateAndUpdateDeploymentStack
+                Effect: Allow
+                Action:
+                  - cloudformation:DescribeStacks
+                  - cloudformation:CreateStack
+                  - cloudformation:UpdateStack
+                Resource: !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${DeploymentStackName}/*
+              - Sid: PassStackRoleToCloudFormation
+                Effect: Allow
+                Action: iam:PassRole
+                Resource: !Sub ${CloudFormationStackRole.Arn}
+
+  # Role that is passed to CloudFormation in order to deploy the production stack
+  CloudFormationStackRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: cloudformation.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub ${CloudFormationStackPolicy}
+
+  # Role assumed by CodeBuild projects. Permissions granted allow for logging to CloudWatch, managing artifacts,
+  # validating CloudFormation templates, and the various permissions required to execute taskcat.
+  # Note: The CloudFormation stack policy is also attached to this role, since the same permissions are required to
+  # create/delete the test stacks through taskcat
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub ${CloudFormationStackPolicy}
+        - !Sub ${TaskCatPolicy}
+      Policies:
+        - PolicyName: CodeBuildAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: LogToCloudWatch
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Sid: GetAndPutArtifacts
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub ${PipelineArtifactsBucket.Arn}/*
+              - Sid: ValidateCloudFormationTemplate
+                Effect: Allow
+                Action: cloudformation:ValidateTemplate
+                Resource: "*"
+              - Sid: ECR
+                Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:GetRepositoryPolicy
+                  - ecr:DescribeRepositories
+                  - ecr:ListImages
+                  - ecr:DescribeImages
+                  - ecr:BatchGetImage
+                  - ecr:GetLifecyclePolicy
+                  - ecr:GetLifecyclePolicyPreview
+                  - ecr:ListTagsForResource
+                  - ecr:DescribeImageScanFindings
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                Resource: "*"
+
+  # IAM Policy that determines what permissions CloudFormation has when deploying the production
+  # stack. This policy defines the minimum permissions necessary to carry out deployments.
+  # Note: Delete permissions are included here to account for deleting the stack
+  CloudFormationStackPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: S3BucketPermissions
+            Effect: Allow
+            Action:
+              - s3:CreateBucket
+              - s3:DeleteBucket
+              - s3:GetEncryptionConfiguration
+              - s3:PutEncryptionConfiguration
+              - s3:GetBucketAcl
+              - s3:PutBucketAcl
+              - s3:GetBucketLogging
+              - s3:PutBucketLogging
+            Resource: arn:aws:s3:::*
+          - Sid: CloudFormationPermissions
+            Effect: Allow
+            Action:
+              - iam:PassRole
+              - ec2:DescribeInstances
+              - ec2:DescribeVpcs
+              - elasticloadbalancing:DescribeListeners
+              - elasticloadbalancing:CreateListener
+              - elasticloadbalancing:DeleteListener
+              - elasticloadbalancing:ModifyListener
+              - elasticloadbalancing:DescribeRules
+              - elasticloadbalancing:CreateRule
+              - elasticloadbalancing:ModifyRule
+              - elasticloadbalancing:DeleteRule
+              - elasticloadbalancing:DescribeTargetGroups
+              - elasticloadbalancing:CreateTargetGroup
+              - elasticloadbalancing:ModifyTargetGroup
+              - elasticloadbalancing:ModifyTargetGroupAttributes
+              - elasticloadbalancing:DeleteTargetGroup
+              - elasticloadbalancing:DescribeLoadBalancers
+              - elasticloadbalancing:DescribeLoadBalancerAttributes
+              - elasticloadbalancing:RegisterTargets
+              - elasticloadbalancing:DeregisterTargets
+              - application-autoscaling:DescribeScalingActivities
+              - application-autoscaling:DescribeScalableTargets
+              - application-autoscaling:RegisterScalableTarget
+              - application-autoscaling:DeregisterScalableTarget
+              - application-autoscaling:DescribeScalingPolicies
+              - application-autoscaling:PutScalingPolicy
+              - application-autoscaling:DeleteScalingPolicy
+              - ecs:RegisterTaskDefinition
+              - ecs:DeregisterTaskDefinition
+              - ecs:DescribeServices
+              - ecs:CreateService
+              - ecs:UpdateService
+              - ecs:DeleteService
+              - ecr:GetAuthorizationToken
+              - ecr:DescribeImages
+              - ecr:DeleteRepository
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DeleteLogGroup
+              - cloudwatch:DescribeAlarms
+              - cloudwatch:DeleteAlarms
+              - cloudwatch:DescribeAlarmsForMetric
+              - cloudwatch:DisableAlarmActions
+              - cloudwatch:EnableAlarmActions
+              - cloudwatch:GetMetricData
+              - cloudwatch:PutMetricAlarm
+              - cloudwatch:PutMetricData
+              - secretsmanager:GetSecretValue
+              - secretsmanager:DescribeSecret
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Resource: "*"
+
+  # IAM Policy that grants permissions required for Taskcat execution.
+  # Note: This policy doesn't include any permissions required to deploy the test stacks, these
+  # permissions are required by the taskcat tool itself
+  TaskCatPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: S3BucketPermissions
+            Effect: Allow
+            Action:
+              - s3:CreateBucket
+              - s3:DeleteBucket
+              - s3:GetBucketLocation
+              - s3:ListBucket
+              - s3:PutBucketPolicy
+            Resource: arn:aws:s3:::taskcat-*
+          - Sid: S3ObjectPermissions
+            Effect: Allow
+            Action:
+              - s3:DeleteObject
+              - s3:GetObject
+              - s3:PutObject
+            Resource: arn:aws:s3:::taskcat-*/*
+          - Sid: CloudFormationPermissions
+            Effect: Allow
+            Action:
+              - cloudformation:CreateStack
+              - cloudformation:DescribeStacks
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeStackResources
+              - cloudformation:DeleteStack
+            Resource: !Sub arn:aws:cloudformation:*:${AWS::AccountId}:stack/tcat-*/*
+          - Sid: ValidateCloudFormationTemplate
+            Effect: Allow
+            Action: cloudformation:ValidateTemplate
+            Resource: "*"
