@@ -94,8 +94,8 @@ Resources:
           Image: !Ref "NginxImageUrl"
           PortMappings:
             - ContainerPort: 80
-              HostPort: 0
-              Protocol: TCP
+              # HostPort: 0
+              # Protocol: TCP
           Links:
             - !Ref "ServiceName"
           LogConfiguration:
@@ -110,7 +110,7 @@ Resources:
           Image: !Ref "ServiceImageUrl"
           PortMappings:
             - ContainerPort: 80
-              HostPort: 0
+              # HostPort: 0
           Links:
             - xray-daemon
           Environment:
@@ -165,7 +165,7 @@ Resources:
           Image: !Ref "XRayImageUrl"
           PortMappings:
             - ContainerPort: !Ref XRayContainerPort
-              HostPort: 0
+              # HostPort: 0
               Protocol: udp
           LogConfiguration:
             LogDriver: "awslogs"
