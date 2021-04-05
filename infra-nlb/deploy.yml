@@ -96,8 +96,8 @@ Resources:
             - ContainerPort: 80
               # HostPort: 0
               # Protocol: TCP
-          Links:
-            - !Ref "ServiceName"
+          # Links:
+          #   - !Ref "ServiceName"
           LogConfiguration:
             LogDriver: "awslogs"
             Options:
@@ -111,11 +111,11 @@ Resources:
           PortMappings:
             - ContainerPort: 8080
               # HostPort: 0
-          Links:
-            - xray-daemon
+          # Links:
+          #   - xray-daemon
           Environment:
             - name: AWS_XRAY_DAEMON_ADDRESS
-              value: !Sub xray-daemon:${XRayContainerPort}
+              value: !Sub localhost:${XRayContainerPort}
             - name: RDS_ENDPOINT
               value: !ImportValue
                 "Fn::Sub": "RDSBevCapital-Endpoint"
