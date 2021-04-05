@@ -183,6 +183,14 @@ Resources:
         MaximumPercent: 200
         MinimumHealthyPercent: 75
       DesiredCount: !Ref "DesiredCount"
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          # SecurityGroups:
+          #   - !Ref FargateContainerSecurityGroup
+          # Subnets:
+          #   - !Ref PrivateSubnet1
+          #   - !Ref PrivateSubnet2
       TaskDefinition: !Ref "TaskDefinition"
       LoadBalancers:
         - ContainerName: !Sub ${ServiceName}-nginx
