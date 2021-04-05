@@ -78,7 +78,7 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Ref "ServiceName"
-      NetworkMode: awsvpc
+      NetworkMode: bridge
       Cpu: 512
       Memory: 512
       TaskRoleArn:
@@ -94,10 +94,10 @@ Resources:
           Image: !Ref "NginxImageUrl"
           PortMappings:
             - ContainerPort: 80
-              # HostPort: 0
-              # Protocol: TCP
-          # Links:
-          #   - !Ref "ServiceName"
+              HostPort: 0
+              Protocol: TCP
+          Links:
+            - !Ref "ServiceName"
           LogConfiguration:
             LogDriver: "awslogs"
             Options:
@@ -109,13 +109,13 @@ Resources:
           Memory: 128
           Image: !Ref "ServiceImageUrl"
           PortMappings:
-            - ContainerPort: 8080
-              # HostPort: 0
-          # Links:
-          #   - xray-daemon
+            - ContainerPort: 80
+              HostPort: 0
+          Links:
+            - xray-daemon
           Environment:
             - name: AWS_XRAY_DAEMON_ADDRESS
-              value: !Sub localhost:${XRayContainerPort}
+              value: !Sub xray-daemon:${XRayContainerPort}
             - name: RDS_ENDPOINT
               value: !ImportValue
                 "Fn::Sub": "RDSBevCapital-Endpoint"
@@ -165,7 +165,7 @@ Resources:
           Image: !Ref "XRayImageUrl"
           PortMappings:
             - ContainerPort: !Ref XRayContainerPort
-              # HostPort: 0
+              HostPort: 0
               Protocol: udp
           LogConfiguration:
             LogDriver: "awslogs"
@@ -183,14 +183,6 @@ Resources:
         MaximumPercent: 200
         MinimumHealthyPercent: 75
       DesiredCount: !Ref "DesiredCount"
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
-          # SecurityGroups:
-          #   - !Ref FargateContainerSecurityGroup
-          # Subnets:
-          #   - !Ref PrivateSubnet1
-          #   - !Ref PrivateSubnet2
       TaskDefinition: !Ref "TaskDefinition"
       LoadBalancers:
         - ContainerName: !Sub ${ServiceName}-nginx
@@ -204,7 +196,7 @@ Resources:
       VpcId: !Ref "VPC"
       Port: !Ref ListenerPort
       Protocol: TCP
-      TargetType: ip
+      TargetType: instance
       HealthCheckIntervalSeconds: 10
       HealthCheckPath: "/ms-logon/health/live"
       HealthCheckProtocol: HTTP
