@@ -203,10 +203,10 @@ Resources:
       HealthyThresholdCount: 2
       UnhealthyThresholdCount: 2
       TargetGroupAttributes:
-      - Key: deregistration_delay.timeout_seconds
-        Value: 60
-      - Key: deregistration_delay.connection_termination.enabled
-        Value: true
+        - Key: deregistration_delay.timeout_seconds
+          Value: 15
+        - Key: deregistration_delay.connection_termination.enabled
+          Value: true
 
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
