@@ -82,7 +82,6 @@ namespace BevCapital.Logon.API.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="404">Not Found</response>
         /// <response code="500">Internal Error</response>
-        [Authorize]
         [HttpPut("update/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Unit))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IReadOnlyCollection<Notification>))]
@@ -104,7 +103,6 @@ namespace BevCapital.Logon.API.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="404">Not Found</response>
         /// <response code="500">Internal Error</response>
-        [Authorize]
         [HttpDelete("delete/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent, Type = typeof(Unit))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IReadOnlyCollection<Notification>))]
