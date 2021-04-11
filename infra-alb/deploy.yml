@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Deploy a service into an ECS cluster behind a load balancer and nginx.
+Description: Deploy a service into an ECS cluster behind a application load balancer and nginx
 Parameters:
   EnvironmentName:
     Type: String

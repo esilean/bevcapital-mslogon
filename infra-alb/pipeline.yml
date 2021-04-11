@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: This template creates a pipeline and deploys a service into an ECS cluster behind a load balancer and nginx.
+Description: This template creates a pipeline and deploys a service into an ECS cluster behind a application load balancer and nginx.
 Parameters:
   AccoundId:
     Type: String

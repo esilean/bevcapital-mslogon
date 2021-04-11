@@ -1,5 +1,5 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Description: Deploy a service into an ECS cluster behind a load balancer and nginx.
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploy a service into an ECS cluster behind a network load balancer and nginx
 Parameters:
   EnvironmentName:
     Type: String
@@ -24,9 +24,9 @@ Parameters:
     Type: String
     Description: The url of a docker image that contains the application
 
-  NLB:
+  NetworkLoadBalancerARN:
     Type: String
-    Description: A Network Load balancer
+    Description: A Network Load balancer ARN
 
   ListenerPort:
     Type: Number
@@ -211,7 +211,7 @@ Resources:
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn: !Ref NLB
+      LoadBalancerArn: !Ref NetworkLoadBalancerARN
       Port: !Ref ListenerPort
       Protocol: TCP
       DefaultActions:

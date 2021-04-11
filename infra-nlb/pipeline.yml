@@ -1,9 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Creates a pipeline and deploys a service into an ECS cluster behind a load balancer and nginx.
+Description: Creates a pipeline and deploys a service into an ECS cluster behind a network load balancer and nginx.
 Parameters:
   AccoundId:
     Type: String
-    Default: ""
     Description: The AWS Account Id
 
   EnvironmentName:
@@ -20,14 +19,12 @@ Parameters:
     Default: development
     Description: Please provide the ECS Cluster ID that this service should run on
 
-  NLB:
+  NetworkLoadBalancerARN:
     Type: String
-    Default: ""
-    Description: A Network Load balancer
+    Description: A Network Load balancer ARN
 
   ECSServiceAutoScalingRoleARN:
     Type: String
-    Default: ""
     Description: The ECS service auto scaling role ARN
 
   DesiredCount:
@@ -150,17 +147,17 @@ Resources:
                 - Name: SourceArtifact
         - Name: Build
           Actions:
-            # - Name: ValidateTemplate
-            #   RunOrder: 1
-            #   InputArtifacts:
-            #     - Name: SourceArtifact
-            #   ActionTypeId:
-            #     Category: Test
-            #     Owner: AWS
-            #     Version: 1
-            #     Provider: CodeBuild
-            #   Configuration:
-            #     ProjectName: !Ref CodeBuildIntegrationProject
+            - Name: ValidateTemplate
+              RunOrder: 1
+              InputArtifacts:
+                - Name: SourceArtifact
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildIntegrationProject
             - Name: GetECRImages
               RunOrder: 2
               InputArtifacts:
@@ -198,7 +195,7 @@ Resources:
                     "EnvironmentName" : "${EnvironmentName}",
                     "VPC":  "${VPC}",
                     "Cluster": "${Cluster}",
-                    "NLB": "${NLB}",
+                    "NetworkLoadBalancerARN": "${NetworkLoadBalancerARN}",
                     "ServiceImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "ServiceImageUrl"] },
                     "NginxImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "NginxImageUrl"] },
                     "XRayImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "XRayImageUrl"] },
