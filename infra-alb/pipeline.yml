@@ -127,7 +127,7 @@ Resources:
       - ECRServiceRepository
       - ECRNginxRepository
       - ECRXrayRepository
-    Type: "AWS::CodePipeline::Pipeline"
+    Type: AWS::CodePipeline::Pipeline
     Properties:
       RoleArn: !GetAtt PipelineRole.Arn
       ArtifactStore:
