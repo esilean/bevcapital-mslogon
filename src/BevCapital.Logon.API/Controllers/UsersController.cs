@@ -1,5 +1,6 @@
 ﻿using BevCapital.Logon.Application.UseCases.User;
 using BevCapital.Logon.Application.UseCases.User.Response;
+using BevCapital.Logon.Domain.Notifications;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,14 +17,16 @@ namespace BevCapital.Logon.API.Controllers
         public UsersController(IMediator mediator) : base(mediator) { }
 
         /// <summary>
-        /// 
+        /// list all users
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>A list of users</returns>
         /// <response code="200">Success</response>
-        /// <response code="500">Internal Error</response>          
+        /// <response code="400">Bad Request</response>
+        /// <response code="500">Internal Error</response>
         [HttpGet("list")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AppUserOut<Guid>>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IReadOnlyCollection<Notification>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<AppUserOut<Guid>>>> List(CancellationToken cancellationToken)
         {
@@ -31,13 +34,19 @@ namespace BevCapital.Logon.API.Controllers
         }
 
         /// <summary>
-        /// 
+        /// gets the user by id
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <returns>The details of a user</returns>
+        /// <response code="200">Success</response>
+        /// <response code="400">Bad Request</response>
+        /// <response code="404">Not Found</response>
+        /// <response code="500">Internal Error</response>
         [HttpGet("detail/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AppUserOut<Guid>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IReadOnlyCollection<Notification>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(IReadOnlyCollection<Notification>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AppUserOut<Guid>>> Detail(Guid id, CancellationToken cancellationToken)
         {
@@ -45,13 +54,17 @@ namespace BevCapital.Logon.API.Controllers
         }
 
         /// <summary>
-        /// 
+        /// creates an user
         /// </summary>
         /// <param name="command"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        /// <response code="200">Success</response>
+        /// <response code="400">Bad Request</response>
+        /// <response code="500">Internal Error</response>
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Unit))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IReadOnlyCollection<Notification>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Unit>> Create(Create.CreateAppUserCommand command, CancellationToken cancellationToken)
         {
@@ -59,15 +72,21 @@ namespace BevCapital.Logon.API.Controllers
         }
 
         /// <summary>
-        /// 
+        /// updates an user
         /// </summary>
         /// <param name="id"></param>
         /// <param name="command"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        /// <response code="200">Success</response>
+        /// <response code="400">Bad Request</response>
+        /// <response code="404">Not Found</response>
+        /// <response code="500">Internal Error</response>
         [Authorize]
         [HttpPut("update/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Unit))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IReadOnlyCollection<Notification>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(IReadOnlyCollection<Notification>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Unit>> Update(Guid id, Update.UpdateAppUserCommand command, CancellationToken cancellationToken)
         {
@@ -76,14 +95,20 @@ namespace BevCapital.Logon.API.Controllers
         }
 
         /// <summary>
-        /// 
+        /// removes an user
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        /// <response code="204">Success</response>
+        /// <response code="400">Bad Request</response>
+        /// <response code="404">Not Found</response>
+        /// <response code="500">Internal Error</response>
         [Authorize]
         [HttpDelete("delete/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent, Type = typeof(Unit))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IReadOnlyCollection<Notification>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(IReadOnlyCollection<Notification>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Unit>> Delete(Guid id, CancellationToken cancellationToken)
         {

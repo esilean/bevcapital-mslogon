@@ -2,6 +2,7 @@ using Amazon.XRay.Recorder.Core;
 using Amazon.XRay.Recorder.Core.Internal.Entities;
 using BevCapital.Logon.API.Middlewares;
 using BevCapital.Logon.Data.Context;
+using BevCapital.Logon.Domain.Constants;
 using BevCapital.Logon.Infra.ServiceExtensions;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
@@ -93,7 +94,7 @@ namespace BevCapital.Logon.API
                         environment = env.EnvironmentName
                     });
 
-                    context.Response.ContentType = "application/json";
+                    context.Response.ContentType = Common.APPLICATION_JSON;
                     await context.Response.WriteAsync(result.ToString());
                 });
             });
@@ -114,7 +115,6 @@ namespace BevCapital.Logon.API
                 logger.LogInformation("Initializing OutboxContext Database Migration.");
                 outboxContext.Database.Migrate();
                 logger.LogInformation("Finishing OutboxContext Database Migration...");
-
             }
             catch (Exception e)
             {

@@ -1,4 +1,5 @@
-﻿using BevCapital.Logon.Domain.Notifications;
+﻿using BevCapital.Logon.Domain.Constants;
+using BevCapital.Logon.Domain.Notifications;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
@@ -28,7 +29,7 @@ namespace BevCapital.Logon.Infra.Filters
             if (_appNotificationHandler.HasNotifications)
             {
                 context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                context.HttpContext.Response.ContentType = "application/json";
+                context.HttpContext.Response.ContentType = Common.APPLICATION_JSON;
 
                 var notifications = JsonConvert.SerializeObject(_appNotificationHandler.Notifications);
                 await context.HttpContext.Response.WriteAsync(notifications);

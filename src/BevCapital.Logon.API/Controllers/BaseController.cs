@@ -1,11 +1,12 @@
-﻿using MediatR;
+﻿using BevCapital.Logon.Domain.Constants;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BevCapital.Logon.API.Controllers
 {
     [Route("api/logon")]
     [ApiController]
-    [Produces("application/json")]
+    [Produces(Common.APPLICATION_JSON)]
     public class BaseController : ControllerBase
     {
         protected readonly IMediator _mediator;
