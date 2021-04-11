@@ -118,7 +118,7 @@ Resources:
               value: !Sub xray-daemon:${XRayContainerPort}
             - name: RDS_ENDPOINT
               value: !ImportValue
-                "Fn::Sub": "RDSBevCapital-Endpoint"
+                "Fn::Sub": "DBInstance-Endpoint"
             - name: RDS_PASSWORD
               value:
                 !Join [
@@ -151,7 +151,7 @@ Resources:
                 ]
             - name: SNSSettings__TopicArn
               value: !ImportValue
-                "Fn::Sub": "SNSTopicARNBevCapital"
+                "Fn::Sub": "AppSNSTopicARN"
           LogConfiguration:
             LogDriver: "awslogs"
             Options:

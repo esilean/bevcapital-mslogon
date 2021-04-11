@@ -1,9 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Creates a pipeline and deploys a service into an ECS cluster behind a load balancer and nginx.
+Description: This template creates a pipeline and deploys a service into an ECS cluster behind a load balancer and nginx.
 Parameters:
   AccoundId:
     Type: String
-    Default: ""
     Description: The AWS Account Id
 
   EnvironmentName:
@@ -20,19 +19,12 @@ Parameters:
     Default: development
     Description: Please provide the ECS Cluster ID that this service should run on
 
-  ALB:
-    Type: String
-    Default: ""
-    Description: A Load balancer
-
   HttpListener:
     Type: String
-    Default: ""
-    Description: A Listener of the Load balancer
+    Description: A Listener of the Application Load balancer
 
   ECSServiceAutoScalingRoleARN:
     Type: String
-    Default: ""
     Description: The ECS service auto scaling role ARN
 
   Priority:
@@ -162,17 +154,17 @@ Resources:
                 - Name: SourceArtifact
         - Name: Build
           Actions:
-            # - Name: ValidateTemplate
-            #   RunOrder: 1
-            #   InputArtifacts:
-            #     - Name: SourceArtifact
-            #   ActionTypeId:
-            #     Category: Test
-            #     Owner: AWS
-            #     Version: 1
-            #     Provider: CodeBuild
-            #   Configuration:
-            #     ProjectName: !Ref CodeBuildIntegrationProject
+            - Name: ValidateTemplate
+              RunOrder: 1
+              InputArtifacts:
+                - Name: SourceArtifact
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildIntegrationProject
             - Name: GetECRImages
               RunOrder: 2
               InputArtifacts:
@@ -204,13 +196,12 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 RoleArn: !Sub ${CloudFormationStackRole.Arn}
                 StackName: !Sub ${DeploymentStackName}
-                TemplatePath: SourceArtifact::infra/deploy.yml
+                TemplatePath: SourceArtifact::infra-alb/deploy.yml
                 ParameterOverrides: !Sub |
                   {
                     "EnvironmentName" : "${EnvironmentName}",
                     "VPC":  "${VPC}",
                     "Cluster": "${Cluster}",
-                    "ALB": "${ALB}",
                     "HttpListener": "${HttpListener}",
                     "ServiceImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "ServiceImageUrl"] },
                     "NginxImageUrl": { "Fn::GetParam" : ["BuildArtifact", "serviceimages.json", "NginxImageUrl"] },
@@ -314,7 +305,7 @@ Resources:
             build:
               commands:
                 - echo Build started on `date`
-                - aws cloudformation validate-template --template-body file://infra/deploy.yml
+                - aws cloudformation validate-template --template-body file://infra-alb/deploy.yml
 
   # CodeBuild project that is run any time a PR is created, updated, or reopened for the target
   # repository. The project will only run if the target branch of the PR is the same as the
@@ -374,7 +365,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           Effect: Allow
           Principal:
@@ -383,7 +374,7 @@ Resources:
       Policies:
         - PolicyName: CodePipelineAccess
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Sid: GetAndPutArtifacts
                 Effect: Allow
@@ -416,7 +407,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           Effect: Allow
           Principal:
@@ -433,7 +424,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
@@ -445,7 +436,7 @@ Resources:
       Policies:
         - PolicyName: CodeBuildAccess
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Sid: LogToCloudWatch
                 Effect: Allow
@@ -492,7 +483,7 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Sid: S3BucketPermissions
             Effect: Allow
@@ -570,7 +561,7 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Sid: S3BucketPermissions
             Effect: Allow
