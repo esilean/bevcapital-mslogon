@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a service into an ECS cluster behind a network load balancer and nginx
+
 Parameters:
   EnvironmentName:
     Type: String
