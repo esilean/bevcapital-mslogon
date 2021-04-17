@@ -37,12 +37,23 @@ Resources:
           Statement:
             - Effect: Allow
               Action:
-                  - sqs:GetQueueUrl
-                  - sqs:SendMessage
-                  - sqs:SendMessageBatch
-                  - sqs:ReceiveMessage
-                  - sqs:DeleteMessage
-                  - sqs:DeleteMessageBatch
+                  - "sns:Publish"
+                  - "secretsmanager:*"
+                  - "kms:Encrypt"
+                  - "kms:Decrypt"
+                  - "kms:ReEncrypt"
+                  - "kms:GenerateDataKey"
+                  - "kms:CreateGrant"
+                  - "kms:DescribeKey"
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "logs:DescribeLogStreams"
+                  - "xray:PutTraceSegments"
+                  - "xray:PutTelemetryRecords"
+                  - "xray:GetSamplingRules"
+                  - "xray:GetSamplingTargets"
+                  - "xray:GetSamplingStatisticSummaries"
               Resource: '*'
 
 Outputs:

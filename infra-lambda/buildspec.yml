@@ -24,9 +24,11 @@ artifacts:
   type: zip
   files:
     - ./app/*
+  discard-paths: yes
   secondary-artifacts:
     appS3:
       type: zip
       files:
         - ./app/*
+      discard-paths: yes
 

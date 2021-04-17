@@ -108,8 +108,8 @@ namespace BevCapital.Logon.API
         private void Seed(AppUserContext appUserContext, OutboxContext outboxContext, ILogger<Startup> logger)
         {
             // XRAY - EFCore - AsyncLocal Problems
-            string traceId = TraceId.NewId();
-            AWSXRayRecorder.Instance.BeginSegment("DB Migration", traceId);
+            //string traceId = TraceId.NewId();
+            //AWSXRayRecorder.Instance.BeginSegment("DB Migration", traceId);
             try
             {
                 logger.LogInformation("Initializing AppUserContext Database Migration.");
@@ -121,11 +121,11 @@ namespace BevCapital.Logon.API
             }
             catch (Exception e)
             {
-                AWSXRayRecorder.Instance.AddException(e);
+                //AWSXRayRecorder.Instance.AddException(e);
             }
             finally
             {
-                AWSXRayRecorder.Instance.EndSegment();
+                //AWSXRayRecorder.Instance.EndSegment();
             }
         }
 

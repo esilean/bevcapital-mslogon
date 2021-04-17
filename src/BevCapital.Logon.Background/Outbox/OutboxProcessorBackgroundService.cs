@@ -59,7 +59,7 @@ namespace BevCapital.Logon.Background.Outbox
 
                 try
                 {
-                    AWSXRayRecorder.Instance.BeginSegment(nameof(OutboxProcessorBackgroundService));
+                    //AWSXRayRecorder.Instance.BeginSegment(nameof(OutboxProcessorBackgroundService));
 
                     var messageIds = await outboxStore.GetUnprocessedMessageIds();
 
@@ -82,14 +82,14 @@ namespace BevCapital.Logon.Background.Outbox
                 catch (Exception e)
                 {
                     _logger.LogError(e, e.Message);
-                    AWSXRayRecorder.Instance.AddException(e);
+                    //AWSXRayRecorder.Instance.AddException(e);
                 }
                 finally
                 {
                     if (_outboxSettings.DeleteAfter)
                         await outboxStore.Delete(publishedMessageIds);
 
-                    AWSXRayRecorder.Instance.EndSegment();
+                    //AWSXRayRecorder.Instance.EndSegment();
                 }
             }
         }
