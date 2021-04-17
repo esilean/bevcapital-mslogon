@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      dotnet: latest
+
+  pre_build:
+    commands:
+      - echo Restore started on `date`
+      - dotnet restore
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - dotnet build
+
+  post_build:
+    commands:
+      - echo Publish started on `date`
+      - dotnet publish -c Release -o app --self-contained false ../src/BevCapital.Logon.API
+
+artifacts:
+  type: zip
+  files:
+    - ./app/*

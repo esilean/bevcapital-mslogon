@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Creates a lambda service
+
+Parameters:
+
+  PackageFileName:
+    Type: String
+    Description: The package file name (e.g. 'sourceCode.zip')
+    Default: ms-logon.zip
+
+Globals:
+  Function:
+    Timeout: 180
+
+Resources:
+
+  MSLogonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri:
+        Bucket: ms-logon-lambda
+        Key: !Sub app/${PackageFileName}
+      Handler: BevCapital.Logon.API::BevCapital.Logon.API.LambdaEntryPoint::FunctionHandlerAsync
+      Runtime: dotnetcore3.1
+      PackageType: Zip
+      Environment:
+        Variables:
+          RDS_ENDPOINT: rr1jc6gsmqjsit.cde5ubcwv1jz.sa-east-1.rds.amazonaws.com
+          RDS_PASSWORD: "7_S,t03>m+A`Hf(j]w!=#*C+j"
+          CACHE_ENDPOINT: redis-17626.c256.us-east-1-2.ec2.cloud.redislabs.com:17626
+          CACHE_PASSWORD: bXmNJ3V86CpbcesWt8zo4DVEiQLZyTiA
+          SNSSettings__TopicArn: arn:aws:sns:sa-east-1:268919435141:topic-user-bevcapital.fifo
+      Policies:
+        - AWSLambdaExecute
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                  - sqs:GetQueueUrl
+                  - sqs:SendMessage
+                  - sqs:SendMessageBatch
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:DeleteMessageBatch
+              Resource: '*'
+
+Outputs:
+
+  MSLogonFunction:
+    Description: "MSLogonFunction Lambda Function ARN"
+    Value: !GetAtt MSLogonFunction.Arn
