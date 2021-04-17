@@ -119,7 +119,7 @@ namespace BevCapital.Logon.API
                 outboxContext.Database.Migrate();
                 logger.LogInformation("Finishing OutboxContext Database Migration...");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //AWSXRayRecorder.Instance.AddException(e);
             }

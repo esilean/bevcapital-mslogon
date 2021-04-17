@@ -1,5 +1,7 @@
+using BevCapital.Logon.Infra.Logger;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace BevCapital.Logon.API
 {
@@ -24,14 +26,25 @@ namespace BevCapital.Logon.API
 
         Amazon.Lambda.AspNetCoreServer.APIGatewayProxyFunction
     {
-        /// <summary>
-        /// The builder has configuration, logging and Amazon API Gateway already configured. The startup class
-        /// needs to be configured in this method using the UseStartup<>() method.
-        /// </summary>
-        /// <param name="builder"></param>
+
         protected override void Init(IWebHostBuilder builder)
         {
+            builder.UseSerilog
+                (
+                    (hostingContext, loggerConfiguration) =>
+                    {
+                        loggerConfiguration
+                            .AppendConsoleLogger()
+                            .AppendAwsCloudwatchLogger("log-aws", hostingContext.HostingEnvironment.EnvironmentName, Serilog.Events.LogEventLevel.Information)
+                            .Enrich.FromLogContext()
+                            .Enrich.WithMachineName()
+                            .MinimumLevel.Information()
+                            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning);
+                    }
+                );
+
             builder
+                .UseKestrel(x => x.AddServerHeader = false)
                 .UseStartup<Startup>();
         }
 
