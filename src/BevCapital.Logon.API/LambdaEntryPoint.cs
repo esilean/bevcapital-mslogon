@@ -1,7 +1,5 @@
-using BevCapital.Logon.Infra.Logger;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 
 namespace BevCapital.Logon.API
 {
@@ -29,20 +27,6 @@ namespace BevCapital.Logon.API
 
         protected override void Init(IWebHostBuilder builder)
         {
-            builder.UseSerilog
-                (
-                    (hostingContext, loggerConfiguration) =>
-                    {
-                        loggerConfiguration
-                            .AppendConsoleLogger()
-                            .AppendAwsCloudwatchLogger("log-aws", hostingContext.HostingEnvironment.EnvironmentName, Serilog.Events.LogEventLevel.Information)
-                            .Enrich.FromLogContext()
-                            .Enrich.WithMachineName()
-                            .MinimumLevel.Information()
-                            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning);
-                    }
-                );
-
             builder
                 .UseKestrel(x => x.AddServerHeader = false)
                 .UseStartup<Startup>();

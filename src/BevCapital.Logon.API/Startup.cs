@@ -66,7 +66,7 @@ namespace BevCapital.Logon.API
             app.UseSwaggerLogon();
             app.UseAWS();
             app.UseSecurity();
-            app.UseSerilogRequestLogging();
+            //app.UseSerilogRequestLogging();
 
             app.UseRouting();
 
