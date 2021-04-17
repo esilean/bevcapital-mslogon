@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace BevCapital.Logon.Domain.Repositories
 {
-    public interface IUnitOfWork : IAsyncDisposable
+    public interface IUnitOfWork : IAsyncDisposable, IDisposable
     {
         IAppUserRepositoryAsync Users { get; }
 

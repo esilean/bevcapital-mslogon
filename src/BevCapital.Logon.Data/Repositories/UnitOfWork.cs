@@ -41,9 +41,34 @@ namespace BevCapital.Logon.Data.Repositories
             }
         }
 
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
         public async ValueTask DisposeAsync()
         {
-            await _appUserContext.DisposeAsync();
+            await DisposeAsyncCore();
+
+            Dispose(disposing: false);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _appUserContext?.Dispose();
+            }
+        }
+
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            if (_appUserContext != null)
+            {
+                await _appUserContext.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 }
