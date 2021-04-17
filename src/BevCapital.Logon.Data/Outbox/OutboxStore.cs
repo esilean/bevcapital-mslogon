@@ -34,24 +34,17 @@ namespace BevCapital.Logon.Data.Outbox
 
         public async Task<OutboxMessage> GetMessage(Guid id)
         {
-            var query = from message in _outboxContext.OutboxMessages
-                        where message.Id == id
-                        select message;
-
-            var result = await query.AsNoTracking().FirstOrDefaultAsync();
-
-            return result;
+            return await _outboxContext.OutboxMessages
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<IEnumerable<Guid>> GetUnprocessedMessageIds()
         {
-            var query = from message in _outboxContext.OutboxMessages
-                        where !message.ProcessedAtUtc.HasValue
-                        select message.Id;
-
-            var result = await query.ToListAsync();
-
-            return result;
+            return await _outboxContext.OutboxMessages
+                                    .Where(x => x.ProcessedAtUtc == null)
+                                    .Select(x => x.Id)
+                                    .ToListAsync();
         }
 
         public async Task SetMessageToProcessed(Guid id)
