@@ -18,9 +18,15 @@ phases:
   post_build:
     commands:
       - echo Publish started on `date`
-      - dotnet publish -c Release -o app --self-contained false ../src/BevCapital.Logon.API
+      - dotnet publish -c Release -o app --self-contained false src/BevCapital.Logon.API
 
 artifacts:
   type: zip
   files:
     - ./app/*
+  secondary-artifacts:
+    appS3:
+      type: zip
+      files:
+        - ./app/*
+

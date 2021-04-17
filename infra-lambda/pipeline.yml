@@ -1,18 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Creates a pipeline and deploys a lambda service
 Parameters:
-  AccoundId:
-    Type: String
-    Description: The AWS Account Id
-
-  EnvironmentName:
-    Type: String
-    Default: development
-    Description: The name of the environment to add this service to
-
-  VPC:
-    Type: AWS::EC2::VPC::Id
-    Description: The VPC that the ECS cluster is deployed to
 
   GitHubRepositoryOwner:
     Type: String
@@ -38,7 +26,7 @@ Parameters:
 
   DeploymentStackName:
     Type: String
-    Default: MSLogonService
+    Default: MSLogonLambda
     Description: >
       Name to give the production stack that is deployed as part of the pipeline
 
@@ -187,10 +175,14 @@ Resources:
       ServiceRole: !Sub ${CodeBuildRole.Arn}
       TimeoutInMinutes: 15
       Artifacts:
-        Type: S3
-        Packaging: ZIP
-        Path: app
-        Name: ms-logon.zip
+        Type: CODEPIPELINE
+      SecondaryArtifacts:
+        - Type: S3
+          ArtifactIdentifier: appS3
+          Packaging: ZIP
+          Path: app
+          Name: ms-logon.zip
+          Location: !Ref LambdaBucket
       Environment:
         Type: LINUX_CONTAINER
         Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
