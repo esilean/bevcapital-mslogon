@@ -1,6 +1,10 @@
 # BevCapital - Logon Microservice
 
-Microservice to be deployed To Lambda Serveless
+Microservice to be deployed to Lambda serveless + DynamoDB.
+
+There is another version of this microsevice using ECS Cluster + RDS MySql.
+Use:
+/logon-api
 
 ### All parts of the this project
 
@@ -22,6 +26,8 @@ Microservice to be deployed To Lambda Serveless
 - AWS CloudWatch - Logs
 - AWS SQS
 - AWS SNS
+- AWS Lambda
+- AWS DynamoDB
 
 ## Techs
 

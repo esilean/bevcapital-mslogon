@@ -1,6 +1,10 @@
 # BevCapital - Logon Background Service
 
-Job to be deployed To Lambda and Cloud Watch Events
+Job to be deployed to a Lambda triggered by Cloud Watch Events for pushing messages to an SNS Topic.
+
+There is another version of this job using background services in a ECS Cluster + RDS MySql.
+Use:
+/logon-api
 
 ### All parts of the this project
 

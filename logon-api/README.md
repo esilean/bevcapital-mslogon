@@ -1,6 +1,11 @@
 # BevCapital - Logon Microservice
 
-Microservice to be deployed into an ECS Cluster + Background Service SNS
+Microservice to be deployed into an ECS Cluster + RDS Mysql + Background Service SNS.
+
+There is another version of the this microsevice using Lambda + DynamoDb.
+Use:
+/logon-lambda-api
+/logon-lambda-job
 
 ### All parts of the this project
 

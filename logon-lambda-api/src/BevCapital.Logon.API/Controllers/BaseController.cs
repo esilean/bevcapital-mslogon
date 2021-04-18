@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BevCapital.Logon.API.Controllers
 {
-    [Route("ms-logon/api/logon")]
+    [Route("lambda/ms-logon/api/logon")]
     [ApiController]
     [Produces(Common.APPLICATION_JSON)]
     public class BaseController : ControllerBase
