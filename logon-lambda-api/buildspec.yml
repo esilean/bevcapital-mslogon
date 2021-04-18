@@ -33,7 +33,7 @@ phases:
       - cd app
       - zip -r $FILE_NAME .
       - echo "Uploading to S3.."
-      - aws s3 cp $FILE_NAME s3://${BUCKET_NAME}/$FILE_NAME
+      - aws s3 cp $FILE_NAME s3://${BUCKET_NAME}/app/$FILE_NAME
       - echo "Done."
 
       # Generate json with service name

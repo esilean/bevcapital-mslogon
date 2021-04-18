@@ -56,27 +56,33 @@ Resources:
           Statement:
             - Effect: Allow
               Action:
-                - "secretsmanager:*"
-                - "kms:Encrypt"
-                - "kms:Decrypt"
-                - "kms:ReEncrypt"
-                - "kms:GenerateDataKey"
-                - "kms:DescribeKey"
-                - "logs:CreateLogGroup"
-                - "logs:CreateLogStream"
-                - "logs:PutLogEvents"
-                - "logs:DescribeLogStreams"
-                - "xray:PutTraceSegments"
-                - "xray:PutTelemetryRecords"
-                - "xray:GetSamplingRules"
-                - "xray:GetSamplingTargets"
-                - "xray:GetSamplingStatisticSummaries"
-                - "dynamodb:Query"
-                - "dynamodb:Scan"
-                - "dynamodb:GetItem"
-                - "dynamodb:PutItem"
-                - "dynamodb:UpdateItem"
-                - "dynamodb:DeleteItem"
+                - iam:CreateRole
+                - iam:DeleteRole
+                - iam:PutRolePolicy
+                - iam:DeleteRolePolicy
+                - iam:GetRole
+                - secretsmanager:DescribeSecret
+                - secretsmanager:GetSecretValue
+                - kms:Encrypt
+                - kms:Decrypt
+                - kms:ReEncrypt
+                - kms:GenerateDataKey
+                - kms:DescribeKey
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+                - logs:DescribeLogStreams
+                - xray:PutTraceSegments
+                - xray:PutTelemetryRecords
+                - xray:GetSamplingRules
+                - xray:GetSamplingTargets
+                - xray:GetSamplingStatisticSummaries
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
               Resource: "*"
 
 Outputs:

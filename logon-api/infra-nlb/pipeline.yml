@@ -189,7 +189,7 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 RoleArn: !Sub ${CloudFormationStackRole.Arn}
                 StackName: !Sub ${DeploymentStackName}
-                TemplatePath: SourceArtifact::infra-nlb/deploy.yml
+                TemplatePath: SourceArtifact::logon-api/infra-nlb/deploy.yml
                 ParameterOverrides: !Sub |
                   {
                     "EnvironmentName" : "${EnvironmentName}",
@@ -297,7 +297,7 @@ Resources:
             build:
               commands:
                 - echo Build started on `date`
-                - aws cloudformation validate-template --template-body file://infra-nlb/deploy.yml
+                - aws cloudformation validate-template --template-body file://logon-api/infra-nlb/deploy.yml
 
   # CodeBuild project that is run any time a PR is created, updated, or reopened for the target
   # repository. The project will only run if the target branch of the PR is the same as the

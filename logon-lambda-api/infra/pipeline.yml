@@ -137,6 +137,7 @@ Resources:
             - Name: DeployAction
               RunOrder: 1
               InputArtifacts:
+                - Name: SourceArtifact
                 - Name: BuildArtifact
               ActionTypeId:
                 Category: Deploy
@@ -145,14 +146,14 @@ Resources:
                 Provider: CloudFormation
               Configuration:
                 ActionMode: CREATE_UPDATE
-                Capabilities: CAPABILITY_NAMED_IAM
+                Capabilities: CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND
                 RoleArn: !Sub ${CloudFormationStackRole.Arn}
                 StackName: !Sub ${DeploymentStackName}
                 TemplatePath: SourceArtifact::logon-lambda-api/infra/deploy.yml
                 ParameterOverrides: !Sub |
                   {
                     "LambdaBucketName":  "${LambdaBucketName}",
-                    "PackageFileName": { "Fn::GetParam" : ["BuildArtifact", "service.json", "FileName"] },
+                    "PackageFileName": { "Fn::GetParam" : ["BuildArtifact", "service.json", "FileName"] }
                   }
 
   # S3 Bucket to hold artifacts for the Pipeline. Only requirement is that the S3 bucket has
@@ -405,6 +406,13 @@ Resources:
             Effect: Allow
             Action:
               - iam:PassRole
+              - iam:CreateRole
+              - iam:DeleteRole
+              - iam:GetRolePolicy
+              - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
               - logs:CreateLogGroup
               - logs:CreateLogStream
               - logs:PutLogEvents
@@ -421,6 +429,7 @@ Resources:
               - secretsmanager:DescribeSecret
               - kms:Decrypt
               - kms:GenerateDataKey
+              - cloudformation:CreateChangeSet
             Resource: "*"
 
   # IAM Policy that grants permissions required for Taskcat execution.
