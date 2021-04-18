@@ -29,22 +29,25 @@ phases:
       - FILE_NAME=ms-logon-lambda-$COMMIT_HASH.zip
       - echo $FILE_NAME
 
-      # Generate json with service name
-      - printf '{' >> service.json
-      - printf ' "FileName":"%s" ' $FILE_NAME >> service.json
-      - printf '}' >> service.json
+      - echo "Compressing the package.."
+      - cd app
+      - zip -r $FILE_NAME .
+      - echo "Uploading to S3.."
+      - aws s3 cp $FILE_NAME s3://${BUCKET_NAME}/$FILE_NAME
+      - echo "Done."
 
+      # Generate json with service name
+      - cd ..
       - printf '{' >> service.json
       - printf ' "FileName":"%s" ' ${FILE_NAME} >> service.json
       - printf '}' >> service.json
-
 artifacts:
   files:
-    - service.json
+    - ./logon-lambda-api/service.json
   discard-paths: yes
-  secondary-artifacts:
-    appS3:
-      files:
-        - ./app/*
-      discard-paths: yes
-      name: $FILE_NAME
+  # secondary-artifacts:
+  #   appS3:
+  #     files:
+  #       - ./logon-lambda-api/app/*
+  #     discard-paths: yes
+  #     name: $FILE_NAME

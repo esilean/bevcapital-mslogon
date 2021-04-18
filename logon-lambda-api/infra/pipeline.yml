@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Creates a pipeline and deploys a lambda service
 Parameters:
-  BucketName:
+  LambdaBucketName:
     Type: String
     Description: The bucket name where the file is
     Default: bevcapital-mslogon-lambda
@@ -74,7 +74,7 @@ Resources:
   LambdaBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref BucketName
+      BucketName: !Ref LambdaBucketName
       AccessControl: LogDeliveryWrite
       # BucketEncryption:
       #   ServerSideEncryptionConfiguration:
@@ -148,10 +148,10 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 RoleArn: !Sub ${CloudFormationStackRole.Arn}
                 StackName: !Sub ${DeploymentStackName}
-                TemplatePath: SourceArtifact::infra/deploy.yml
+                TemplatePath: SourceArtifact::logon-lambda-api/infra/deploy.yml
                 ParameterOverrides: !Sub |
                   {
-                    "BucketName":  "${BucketName}",
+                    "LambdaBucketName":  "${LambdaBucketName}",
                     "PackageFileName": { "Fn::GetParam" : ["BuildArtifact", "service.json", "FileName"] },
                   }
 
@@ -197,17 +197,11 @@ Resources:
   CodeBuildLambdaToS3:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${GitHubRepositoryName}-zip-lambda
+      Name: !Sub ${GitHubRepositoryName}-lambda
       ServiceRole: !Sub ${CodeBuildRole.Arn}
       TimeoutInMinutes: 15
       Artifacts:
         Type: CODEPIPELINE
-      SecondaryArtifacts:
-        - Type: S3
-          ArtifactIdentifier: appS3
-          Packaging: ZIP
-          Path: app
-          Location: !Ref LambdaBucket
       Environment:
         Type: LINUX_CONTAINER
         Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
@@ -217,6 +211,8 @@ Resources:
         EnvironmentVariables:
           - Name: ASPNETCORE_ENVIRONMENT
             Value: Production
+          - Name: BUCKET_NAME
+            Value: !Ref LambdaBucketName
       LogsConfig:
         CloudWatchLogs:
           Status: ENABLED
