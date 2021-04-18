@@ -6,7 +6,7 @@ Parameters:
   BucketName:
     Type: String
     Description: The bucket name where the file is
-    Default: ms-logon-lambda
+    Default: bevcapital-mslogon-lambda
 
   PackageFileName:
     Type: String

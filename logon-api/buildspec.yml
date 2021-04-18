@@ -10,6 +10,9 @@ phases:
     commands:
   build:
     commands:
+      # Enter directory
+      - cd logon-api
+
       - echo Replacing variables to create erc repo url
       - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$AWS_REGION\$\$/'"${AWS_REGION}"'/g')
       - ECR_REPO=$(echo "$ECR_REPO" | sed 's/\$\$ACCOUNT_ID\$\$/'"${ACCOUNT_ID}"'/g')

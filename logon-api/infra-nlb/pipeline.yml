@@ -266,7 +266,7 @@ Resources:
           Status: ENABLED
       Source:
         Type: CODEPIPELINE
-        BuildSpec: buildspec.yml
+        BuildSpec: logon-api/buildspec.yml
 
   # CodeBuild project that is run by the Pipeline during the Test Stage. Execution is controlled by
   # the buildspec.yml file in the root of the repository

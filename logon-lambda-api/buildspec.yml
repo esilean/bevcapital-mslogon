@@ -7,6 +7,9 @@ phases:
 
   pre_build:
     commands:
+      # Enter directory
+      - cd logon-lambda-api
+
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - echo $COMMIT_HASH
 
@@ -24,10 +27,15 @@ phases:
       - dotnet publish -c Release -o app --self-contained false src/BevCapital.Logon.API
 
       - FILE_NAME=ms-logon-lambda-$COMMIT_HASH.zip
+      - echo $FILE_NAME
 
       # Generate json with service name
       - printf '{' >> service.json
       - printf ' "FileName":"%s" ' $FILE_NAME >> service.json
+      - printf '}' >> service.json
+
+      - printf '{' >> service.json
+      - printf ' "FileName":"%s" ' ${FILE_NAME} >> service.json
       - printf '}' >> service.json
 
 artifacts:

@@ -5,6 +5,9 @@ phases:
     runtime-versions:
       dotnet: latest
     commands:
+      # Enter directory
+      - cd logon-api
+
       - echo Installing Entity Framework Core tools reference - .NET CLI
       - dotnet tool install --global dotnet-ef
 

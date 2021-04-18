@@ -4,7 +4,7 @@ Parameters:
   BucketName:
     Type: String
     Description: The bucket name where the file is
-    Default: ms-logon-lambda
+    Default: bevcapital-mslogon-lambda
 
   GitHubRepositoryOwner:
     Type: String
@@ -222,7 +222,7 @@ Resources:
           Status: ENABLED
       Source:
         Type: CODEPIPELINE
-        BuildSpec: buildspec.yml
+        BuildSpec: logon-lambda-api/buildspec.yml
 
   # CodeBuild project that is run any time a PR is created, updated, or reopened for the target
   # repository. The project will only run if the target branch of the PR is the same as the
