@@ -406,8 +406,10 @@ Resources:
             Effect: Allow
             Action:
               - iam:PassRole
+              - iam:GetRole
               - iam:CreateRole
               - iam:DeleteRole
+              - iam:TagRole
               - iam:GetRolePolicy
               - iam:PutRolePolicy
               - iam:DeleteRolePolicy
@@ -429,6 +431,18 @@ Resources:
               - secretsmanager:DescribeSecret
               - kms:Decrypt
               - kms:GenerateDataKey
+              - lambda:CreateFunction
+              - lambda:DeleteFunction
+              - lambda:GetFunction
+              - lambda:GetPolicy
+              - lambda:PublishVersion
+              - lambda:TagResource
+              - lambda:UntagResource
+              - lambda:UpdateFunctionCode
+              - lambda:GetFunctionConfiguration
+              - s3:DeleteObject
+              - s3:GetObject
+              - s3:PutObject
               - cloudformation:CreateChangeSet
             Resource: "*"
 

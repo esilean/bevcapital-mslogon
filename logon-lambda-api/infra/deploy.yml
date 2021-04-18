@@ -6,12 +6,10 @@ Parameters:
   LambdaBucketName:
     Type: String
     Description: The bucket name where the file is
-    Default: bevcapital-mslogon-lambda
 
   PackageFileName:
     Type: String
     Description: The package file name (e.g. 'sourceCode.zip')
-    Default: ms-logon.zip
 
 Globals:
   Function:
@@ -27,7 +25,7 @@ Resources:
       Handler: BevCapital.Logon.API::BevCapital.Logon.API.LambdaEntryPoint::FunctionHandlerAsync
       Runtime: dotnetcore3.1
       PackageType: Zip
-      MemorySize: 256
+      MemorySize: 128
       Tracing: Active
       Environment:
         Variables:
@@ -49,18 +47,14 @@ Resources:
                 ":SecretString:cachePassword}}",
               ],
             ]
-          SNSSettings__TopicArn: arn:aws:sns:sa-east-1:268919435141:topic-user-bevcapital.fifo
+          SNSSettings__TopicArn: !ImportValue
+            "Fn::Sub": "AppSNSTopicARN"
       Policies:
         - AWSLambdaExecute
         - Version: 2012-10-17
           Statement:
             - Effect: Allow
               Action:
-                - iam:CreateRole
-                - iam:DeleteRole
-                - iam:PutRolePolicy
-                - iam:DeleteRolePolicy
-                - iam:GetRole
                 - secretsmanager:DescribeSecret
                 - secretsmanager:GetSecretValue
                 - kms:Encrypt
@@ -86,6 +80,12 @@ Resources:
               Resource: "*"
 
 Outputs:
-  MSLogonFunction:
-    Description: "MSLogonFunction Lambda Function ARN"
+  MSLogonFunctionARN:
+    Description: MSLogonFunction Lambda Function ARN
     Value: !GetAtt MSLogonFunction.Arn
+
+  MSLogonFunction:
+    Description: MSLogonFunction Lambda Function
+    Value: !Ref MSLogonFunction
+    Export:
+      Name: MSLogonLambdaFunctionName
