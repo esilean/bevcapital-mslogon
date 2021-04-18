@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BevCapital.Logon.Domain.Core\BevCapital.Logon.Domain.Core.csproj" />
+  </ItemGroup>
+
+</Project>

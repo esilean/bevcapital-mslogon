@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Creates a lambda service
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: The bucket name where the file is
+    Default: ms-logon-lambda
+
+  PackageFileName:
+    Type: String
+    Description: The package file name (e.g. 'sourceCode.zip')
+    Default: ms-logon.zip
+
+Globals:
+  Function:
+    Timeout: 180
+
+Resources:
+  MSLogonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri:
+        Bucket: !Ref BucketName
+        Key: !Sub app/${PackageFileName}
+      Handler: BevCapital.Logon.API::BevCapital.Logon.API.LambdaEntryPoint::FunctionHandlerAsync
+      Runtime: dotnetcore3.1
+      PackageType: Zip
+      MemorySize: 256
+      Tracing: Active
+      Environment:
+        Variables:
+          CACHE_ENDPOINT:
+            !Join [
+              "",
+              [
+                "{{resolve:secretsmanager:",
+                "CacheSecretBevCapital",
+                ":SecretString:cacheEndpoint}}",
+              ],
+            ]
+          CACHE_PASSWORD:
+            !Join [
+              "",
+              [
+                "{{resolve:secretsmanager:",
+                "CacheSecretBevCapital",
+                ":SecretString:cachePassword}}",
+              ],
+            ]
+          SNSSettings__TopicArn: arn:aws:sns:sa-east-1:268919435141:topic-user-bevcapital.fifo
+      Policies:
+        - AWSLambdaExecute
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - "secretsmanager:*"
+                - "kms:Encrypt"
+                - "kms:Decrypt"
+                - "kms:ReEncrypt"
+                - "kms:GenerateDataKey"
+                - "kms:DescribeKey"
+                - "logs:CreateLogGroup"
+                - "logs:CreateLogStream"
+                - "logs:PutLogEvents"
+                - "logs:DescribeLogStreams"
+                - "xray:PutTraceSegments"
+                - "xray:PutTelemetryRecords"
+                - "xray:GetSamplingRules"
+                - "xray:GetSamplingTargets"
+                - "xray:GetSamplingStatisticSummaries"
+                - "dynamodb:Query"
+                - "dynamodb:Scan"
+                - "dynamodb:GetItem"
+                - "dynamodb:PutItem"
+                - "dynamodb:UpdateItem"
+                - "dynamodb:DeleteItem"
+              Resource: "*"
+
+Outputs:
+  MSLogonFunction:
+    Description: "MSLogonFunction Lambda Function ARN"
+    Value: !GetAtt MSLogonFunction.Arn

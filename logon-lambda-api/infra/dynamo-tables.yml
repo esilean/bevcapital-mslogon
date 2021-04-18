@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates dynamo table for mslogon microservice
+
+Resources:
+  LogonTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Logon_AppUsers
+      AttributeDefinitions:
+        - AttributeName: "Email"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Email"
+          KeyType: HASH
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+  OutboxMessagesLogonTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Logon_OutboxMessages
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: HASH
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      TimeToLiveSpecification:
+        AttributeName: TimeToLive
+        Enabled: true
